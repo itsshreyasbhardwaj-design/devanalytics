@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Database, provisionOrganization, upsertRepository } from '@devanalytics/db';
+import { Database, MIGRATIONS, provisionOrganization, upsertRepository } from '@devanalytics/db';
 import { testDatabase } from '../helpers/db.js';
 
 describe('database migrations and tenant isolation', () => {
@@ -16,7 +16,7 @@ describe('database migrations and tenant isolation', () => {
     const second = await db.migrate();
     expect(second).toEqual([]);
     const rows = await db.unscoped((sql) => sql.query<{ version: string }>('select version from schema_migrations order by version'));
-    expect(rows.rows.map((r) => r.version)).toEqual(['0001_init', '0002_indexes', '0003_rls']);
+    expect(rows.rows.map((r) => r.version)).toEqual(MIGRATIONS.map((m) => m.version));
   });
 
   it('creates the two least-privilege roles', async () => {
