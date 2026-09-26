@@ -273,19 +273,25 @@ nobody else.
 ## Testing
 
 ```bash
-pnpm test              # unit + integration + security
-pnpm test:e2e          # Playwright, against a seeded instance
+pnpm test              # 219 unit + integration + security tests
+pnpm test:e2e          # 22 Playwright tests against a production build
 pnpm typecheck
 pnpm lint
+pnpm a11y              # contrast, heading order, landmarks, accessible names
 pnpm bench
 ```
 
-**214 tests.** Every integration and security test runs against a real, freshly-migrated PostgreSQL 16.
+**219 unit, integration and security tests, plus 22 end-to-end tests.** Every integration and security test runs
+against a real, freshly-migrated PostgreSQL 16. The end-to-end suite runs against a production build and authenticates
+with a real API token, not a development bypass.
 
 The metric engine is verified against a dataset whose fifteen expected values were **derived by hand**, not recorded
 from the engine's own output — see [docs/METRIC-TEST-DATASET.md](./docs/METRIC-TEST-DATASET.md). Change intelligence is
 verified against a generated dataset with a *planted* regression: the investigation must attribute the movement to the
 right repository for the right reason.
+
+Accessibility is audited across all thirteen pages for WCAG AA contrast, heading order, landmarks and accessible names
+(`pnpm a11y`). All pass.
 
 Security tests cover webhook spoofing (unsigned, wrongly signed, wrong algorithm, wrong endpoint, tampered body),
 tenant isolation through the HTTP layer (cross-org reads, scoped metrics, exports, AI answers, secret leakage), SQL

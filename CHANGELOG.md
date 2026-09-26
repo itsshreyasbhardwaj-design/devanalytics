@@ -50,7 +50,7 @@ First public release.
 - AES-256-GCM secret storage, hashed API tokens, four-role RBAC, rate limiting, audit logging
 
 **Verification**
-- 214 tests against real PostgreSQL 16
+- 219 unit, integration and security tests against real PostgreSQL 16, plus 22 end-to-end tests against a production build
 - Metric engine checked against fifteen hand-derived expected values
 - Change intelligence checked against a dataset with a planted regression
 - Benchmark suite with a stated methodology
@@ -68,3 +68,8 @@ First public release.
   `org_members` were revoked from that role too, with tests covering exactly what it may reach.
 - The production Content-Security-Policy blocked React Refresh in development, preventing all client hydration.
   `unsafe-eval` is now development-only.
+- Rate-limit buckets were keyed on the principal alone, so every policy shared one bucket. Because capacity is applied
+  on refill, the smallest policy's capacity became the ceiling for all of them and roughly twenty page loads exhausted
+  the AI allowance. Buckets are now per principal and policy.
+- Five text styles fell below the WCAG AA contrast minimum, including sample sizes and metric formulas, and card titles
+  skipped a heading level on ten pages. Both fixed; `pnpm a11y` now audits every page.
