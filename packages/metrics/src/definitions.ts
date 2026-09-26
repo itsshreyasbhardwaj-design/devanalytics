@@ -159,6 +159,7 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
     caveats: [
       'Counts every changed line, including generated files and lockfiles, unless the host reported them separately.',
       'Anchored on creation, not merge, so it describes what the team is *sending* for review in the window.',
+      'Pull requests whose provider did not report diff statistics are excluded, not counted as zero. GitLab merge request webhooks carry no diff statistics, so a GitLab repository reports sizes only once backfill has run. The excluded count is reported alongside the value.',
     ],
   },
   deployment_frequency: {

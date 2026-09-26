@@ -4,6 +4,7 @@ import { ApiTokenAuthProvider } from '@devanalytics/api';
 import { generateApiToken, hashToken, type Database } from '@devanalytics/db';
 import { EventWorker, IngestionService, PostgresJobQueue } from '@devanalytics/event-ingestion';
 import { GitHubWebhookAdapter } from '@devanalytics/github';
+import { GitLabWebhookAdapter } from '@devanalytics/gitlab';
 import { Investigator } from '@devanalytics/investigations';
 import { MetricEngine } from '@devanalytics/metrics';
 import { DevAnalytics } from '@devanalytics/sdk';
@@ -44,21 +45,32 @@ export async function issueToken(
   return token;
 }
 
-export function createTestApi(db: Database, endpointSecret?: { endpointId: string; orgId: string; secret: string }): TestApi {
+export interface TestEndpoint {
+  endpointId: string;
+  orgId: string;
+  secret: string;
+  provider?: 'github' | 'gitlab';
+}
+
+export function createTestApi(db: Database, endpointSecret?: TestEndpoint | TestEndpoint[]): TestApi {
   const engine = new MetricEngine(db);
   const investigator = new Investigator(db, engine);
   const ai = new AiService(db, engine, undefined, investigator);
   const queue = new PostgresJobQueue(db);
+  const endpoints = endpointSecret ? (Array.isArray(endpointSecret) ? endpointSecret : [endpointSecret]) : [];
   const ingestion = new IngestionService({
     db,
     queue,
-    adapters: new Map([['github', new GitHubWebhookAdapter()]]),
-    ...(endpointSecret
+    adapters: new Map([
+      ['github', new GitHubWebhookAdapter()],
+      ['gitlab', new GitLabWebhookAdapter() as unknown as GitHubWebhookAdapter],
+    ]),
+    ...(endpoints.length > 0
       ? {
-          lookupEndpoint: async (id: string) =>
-            id === endpointSecret.endpointId
-              ? { id, orgId: endpointSecret.orgId, provider: 'github', secret: endpointSecret.secret }
-              : null,
+          lookupEndpoint: async (id: string) => {
+            const match = endpoints.find((e) => e.endpointId === id);
+            return match ? { id, orgId: match.orgId, provider: match.provider ?? 'github', secret: match.secret } : null;
+          },
         }
       : {}),
   });

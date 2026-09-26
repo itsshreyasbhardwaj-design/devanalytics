@@ -114,6 +114,9 @@ importers:
       '@devanalytics/github':
         specifier: workspace:*
         version: link:../../packages/github
+      '@devanalytics/gitlab':
+        specifier: workspace:*
+        version: link:../../packages/gitlab
       '@devanalytics/investigations':
         specifier: workspace:*
         version: link:../../packages/investigations
@@ -305,6 +308,18 @@ importers:
         specifier: workspace:*
         version: link:../event-ingestion
 
+  packages/gitlab:
+    dependencies:
+      '@devanalytics/core':
+        specifier: workspace:*
+        version: link:../core
+      '@devanalytics/db':
+        specifier: workspace:*
+        version: link:../db
+      '@devanalytics/event-ingestion':
+        specifier: workspace:*
+        version: link:../event-ingestion
+
   packages/investigations:
     dependencies:
       '@devanalytics/anomaly-detection':
@@ -364,6 +379,9 @@ importers:
       '@devanalytics/github':
         specifier: workspace:*
         version: link:../github
+      '@devanalytics/gitlab':
+        specifier: workspace:*
+        version: link:../gitlab
       '@devanalytics/investigations':
         specifier: workspace:*
         version: link:../investigations

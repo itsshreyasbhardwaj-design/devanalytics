@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **GitLab provider.** Webhook adapter (push, merge requests, approvals, diff notes, pipelines, deployments) and
+  REST/GraphQL backfill, registered alongside GitHub. Metrics, detection, investigations and the dashboard span both
+  providers with no provider-aware code outside the adapters.
+- GitLab-specific handling for things the canonical model does not assume: three timestamp formats, `iid` versus `id`,
+  bearer-token authentication instead of a body signature, pipeline queue time reported as a duration rather than a
+  start time, deployment `short_sha` resolved to a full sha via `commit_url`, and approval timestamps reconstructed from
+  system notes because GitLab's approvals endpoint reports who but not when.
+- `pr_size` now reports how many pull requests it excluded for unknown size, the way lead time already reported
+  unattributable deployments.
+- 71 tests covering the adapter, the backfill source, mixed-provider ingestion and GitLab webhook spoofing.
+
+### Changed
+
+- **`pull_requests.additions`, `deletions` and `changed_files` are nullable** (migration `0008`). They were
+  `not null default 0`, which is safe only while every provider reports diff statistics on every event. GitLab's merge
+  request webhook carries none, so a GitLab repository would have recorded every merge request as zero lines changed and
+  PR size would have reported a median dragged toward zero. Null means "not reported"; `pr_size` excludes those rows.
+  `greatest()` already ignores nulls, so a later event that does carry statistics still wins.
+
 ## [0.1.0] — 2026-09-26
 
 First public release.

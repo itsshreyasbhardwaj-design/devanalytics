@@ -245,6 +245,10 @@ export class MetricEngine {
     const row = await sql.one<{ excluded: number }>(q.text, q.params);
     const count = Number(row?.excluded ?? 0);
     if (!count) return null;
-    return { count, reason: 'Production deployments with no linked pull request cannot be attributed to a commit.' };
+    const reason =
+      def.id === 'pr_size'
+        ? 'Pull requests whose provider did not report diff statistics. They are excluded rather than counted as zero lines.'
+        : 'Production deployments with no linked pull request cannot be attributed to a commit.';
+    return { count, reason };
   }
 }

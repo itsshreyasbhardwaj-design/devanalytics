@@ -140,9 +140,14 @@ export interface UpsertPullRequestInput {
   readyForReviewAt?: string | null;
   mergedAt?: string | null;
   closedAt?: string | null;
-  additions?: number;
-  deletions?: number;
-  changedFiles?: number;
+  /**
+   * Diff statistics, when the provider reported them. `null` or omitted means
+   * unknown — not zero. GitLab's merge request webhook carries none, and a
+   * zero here would be averaged into PR size as if it were measured.
+   */
+  additions?: number | null;
+  deletions?: number | null;
+  changedFiles?: number | null;
   commitCount?: number;
   mergeCommitSha?: string | null;
   reopened?: boolean;
@@ -168,6 +173,8 @@ export async function upsertPullRequest(sql: ScopedSql, input: UpsertPullRequest
        ready_for_review_at = least(pull_requests.ready_for_review_at, excluded.ready_for_review_at),
        merged_at       = coalesce(pull_requests.merged_at, excluded.merged_at),
        closed_at       = coalesce(pull_requests.closed_at, excluded.closed_at),
+       -- greatest() ignores nulls, so a later event that does carry diff
+       -- statistics wins over an earlier one that did not, in either order.
        additions       = greatest(pull_requests.additions, excluded.additions),
        deletions       = greatest(pull_requests.deletions, excluded.deletions),
        changed_files   = greatest(pull_requests.changed_files, excluded.changed_files),
@@ -181,7 +188,7 @@ export async function upsertPullRequest(sql: ScopedSql, input: UpsertPullRequest
       input.baseBranch, input.headBranch, input.createdAt,
       input.readyForReviewAt ?? (input.isDraft ? null : input.createdAt),
       input.mergedAt ?? null, input.closedAt ?? null,
-      input.additions ?? 0, input.deletions ?? 0, input.changedFiles ?? 0, input.commitCount ?? 0,
+      input.additions ?? null, input.deletions ?? null, input.changedFiles ?? null, input.commitCount ?? 0,
       input.mergeCommitSha ?? null, input.reopened ? 1 : 0,
     ],
   );
@@ -389,7 +396,7 @@ interface PrRaw {
   author_user_id: string | null; state: string; is_draft: boolean; base_branch: string;
   head_branch: string; created_at: Date; ready_for_review_at: Date | null; first_review_at: Date | null;
   first_approval_at: Date | null; merged_at: Date | null; closed_at: Date | null; reopened_count: number;
-  additions: number; deletions: number; changed_files: number; commit_count: number;
+  additions: number | null; deletions: number | null; changed_files: number | null; commit_count: number;
   merge_commit_sha: string | null; repo_full_name: string; author_login: string | null;
 }
 

@@ -3,6 +3,7 @@ import { ApiTokenAuthProvider, AuthChain, ClerkAuthProvider, LocalDevAuthProvide
 import { Database } from '@devanalytics/db';
 import { DefaultProviderRegistry, EventWorker, IngestionService, PostgresJobQueue, RedisJobQueue, type JobQueue, type RedisLike } from '@devanalytics/event-ingestion';
 import { GitHubWebhookAdapter } from '@devanalytics/github';
+import { GitLabWebhookAdapter } from '@devanalytics/gitlab';
 import { Investigator } from '@devanalytics/investigations';
 import { MetricEngine } from '@devanalytics/metrics';
 
@@ -96,7 +97,9 @@ export async function createRuntime(config: RuntimeConfig = readConfig()): Promi
   const ai = new AiService(db, engine, openLlm(config), investigator);
   const queue = await openQueue(db, config);
 
-  const registry = new DefaultProviderRegistry().registerWebhook(new GitHubWebhookAdapter());
+  const registry = new DefaultProviderRegistry()
+    .registerWebhook(new GitHubWebhookAdapter())
+    .registerWebhook(new GitLabWebhookAdapter());
   const ingestion = new IngestionService({ db, queue, adapters: registry.adapterMap });
   const worker = new EventWorker(db, queue);
 

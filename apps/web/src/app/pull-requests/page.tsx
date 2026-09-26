@@ -81,7 +81,15 @@ export default async function PullRequestsPage({ searchParams }: { searchParams:
                       <Badge tone={p.state === 'merged' ? 'good' : p.state === 'open' ? 'info' : 'muted'}>{p.state}</Badge>
                       {p.reopenedCount > 0 && <Badge tone="warn" className="ml-1">reopened</Badge>}
                     </Td>
-                    <Td className="text-right tabular-nums">{(p.additions + p.deletions).toLocaleString('en-US')}</Td>
+                    <Td className="text-right tabular-nums">
+                      {p.additions === null || p.deletions === null ? (
+                        <span className="text-xs text-slate-400" title="This provider does not report diff statistics on its webhooks">
+                          not reported
+                        </span>
+                      ) : (
+                        (p.additions + p.deletions).toLocaleString('en-US')
+                      )}
+                    </Td>
                     <Td className="text-right tabular-nums">{hours(p.readyForReviewAt, p.firstReviewAt) ?? <span className="text-slate-400">—</span>}</Td>
                     <Td className="text-right tabular-nums">{hours(p.readyForReviewAt, p.mergedAt) ?? <span className="text-slate-400">—</span>}</Td>
                   </tr>

@@ -151,7 +151,10 @@ function spec(metric: string): Spec {
         val: '(p.additions + p.deletions)::double precision',
         num: '(p.additions + p.deletions)::double precision',
         den: '1',
-        where: [],
+        // A pull request whose provider reported no diff statistics is excluded
+        // rather than counted as zero lines. The sample size then reflects how
+        // many sizes are actually known.
+        where: ['p.additions is not null', 'p.deletions is not null'],
       };
 
     case 'deployment_frequency':
@@ -364,17 +367,39 @@ export function factQuery(metric: string, ctx: FactContext, dimension?: Dimensio
 
 /** Rows a metric excluded for want of a prerequisite, reported next to the value. */
 export function exclusionQuery(metric: string, ctx: FactContext): FactQuery | null {
-  if (metric !== 'lead_time_for_changes') return null;
-  const p = new Params();
-  return {
-    text: `select count(*)::int as excluded
-             from deployments dp
-            where dp.org_id = ${p.add(ctx.orgId)}
-              and dp.created_at >= ${p.add(ctx.window.from)}::timestamptz
-              and dp.created_at <  ${p.add(ctx.window.to)}::timestamptz
-              and dp.state = 'success'
-              and dp.is_production = true
-              and dp.pull_request_id is null`,
-    params: p.all,
-  };
+  if (metric === 'lead_time_for_changes') {
+    const p = new Params();
+    return {
+      text: `select count(*)::int as excluded
+               from deployments dp
+              where dp.org_id = ${p.add(ctx.orgId)}
+                and dp.created_at >= ${p.add(ctx.window.from)}::timestamptz
+                and dp.created_at <  ${p.add(ctx.window.to)}::timestamptz
+                and dp.state = 'success'
+                and dp.is_production = true
+                and dp.pull_request_id is null`,
+      params: p.all,
+    };
+  }
+
+  if (metric === 'pr_size') {
+    // Pull requests whose provider reported no diff statistics. Surfacing the
+    // count matters: a GitLab-only repository would otherwise show a healthy
+    // sample size with no indication that most of its pull requests were left
+    // out until backfill fills the statistics in.
+    const p = new Params();
+    return {
+      text: `select count(*)::int as excluded
+               from pull_requests p
+               left join users au on au.id = p.author_user_id
+              where p.org_id = ${p.add(ctx.orgId)}
+                and p.created_at >= ${p.add(ctx.window.from)}::timestamptz
+                and p.created_at <  ${p.add(ctx.window.to)}::timestamptz
+                and (p.additions is null or p.deletions is null)
+                and coalesce(au.is_bot, false) = false`,
+      params: p.all,
+    };
+  }
+
+  return null;
 }

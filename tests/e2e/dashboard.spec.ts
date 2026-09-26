@@ -81,6 +81,33 @@ test.describe('dashboard', () => {
     await expect(page.getByText('Time to first review')).toBeVisible();
   });
 
+  test('shows GitLab merge requests alongside GitHub pull requests', async ({ page }) => {
+    await page.goto('/pull-requests?period=30d');
+    // Both providers appear in one list, under one set of metrics.
+    await expect(page.getByText(/northwind-robotics\/ledger/).first()).toBeVisible();
+    await expect(page.getByText(/northwind\/(checkout|catalog|identity|infra)/).first()).toBeVisible();
+  });
+
+  test('says "not reported" for sizes GitLab does not send, never zero', async ({ page }) => {
+    await page.goto('/pull-requests?period=30d');
+    const notReported = page.getByText('not reported').first();
+    await expect(notReported).toBeVisible();
+
+    // The row must not be showing a zero instead.
+    const row = page.locator('tr', { has: page.getByText(/northwind-robotics\/ledger/) }).first();
+    await expect(row).toBeVisible();
+    await expect(row.getByText(/^0$/)).toHaveCount(0);
+  });
+
+  test('excludes unknown sizes from PR size and reports how many', async ({ page }) => {
+    await page.goto('/metrics/pr_size?period=30d');
+    await expect(page.getByRole('heading', { name: 'PR size', level: 1 })).toBeVisible();
+    // The exclusion banner names the count rather than silently dropping them.
+    // The same phrase also appears in the metric's caveats, so match the banner.
+    await expect(page.getByText(/\d+ records excluded/)).toBeVisible();
+    await expect(page.getByText(/did not report diff statistics/).first()).toBeVisible();
+  });
+
   test('teams page explains why individuals are not ranked', async ({ page }) => {
     await page.goto('/teams?period=90d');
     await expect(page.getByRole('heading', { name: 'Why there are no individual rankings' })).toBeVisible();

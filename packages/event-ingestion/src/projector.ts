@@ -219,9 +219,12 @@ async function upsertPr(
     readyForReviewAt: opts.readyNow ?? (isDraft ? null : createdAt),
     mergedAt: s(p.mergedAt),
     closedAt: s(p.closedAt),
-    additions: n(p.additions) ?? 0,
-    deletions: n(p.deletions) ?? 0,
-    changedFiles: n(p.changedFiles) ?? 0,
+    // Null, not zero, when the provider did not report diff statistics. A
+    // zero here would be indistinguishable from a genuinely empty pull request
+    // and would be averaged into PR size as a measurement.
+    additions: n(p.additions),
+    deletions: n(p.deletions),
+    changedFiles: n(p.changedFiles),
     commitCount: n(p.commitCount) ?? 0,
     mergeCommitSha: s(p.mergeCommitSha),
     reopened: opts.reopened,

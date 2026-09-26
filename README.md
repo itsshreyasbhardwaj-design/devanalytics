@@ -2,9 +2,10 @@
 
 **Engineering intelligence that tells you what changed, what accounts for it, and what it cannot tell you.**
 
-DevAnalytics ingests real development events — pull requests, reviews, commits, CI runs, deployments — normalizes them
-into a provider-neutral model, computes engineering metrics from them, detects statistically unusual movements against
-each scope's own history, and decomposes those movements into the slices that arithmetically account for them.
+DevAnalytics ingests real development events — pull requests, reviews, commits, CI runs, deployments — from **GitHub and
+GitLab**, normalizes them into a provider-neutral model, computes engineering metrics from them, detects statistically
+unusual movements against each scope's own history, and decomposes those movements into the slices that arithmetically
+account for them.
 
 It is not a dashboard with invented numbers. Every figure is computed from ingested rows or reported as
 **"Insufficient data"** with the observation count. That is enforced by the type system, not by discipline.
@@ -52,6 +53,26 @@ type MetricResult =
 
 Every consumer — API, SDK, dashboard, MCP, AI — must handle both branches to render anything. Charts break the line at
 those periods and shade them, because connecting across a gap asserts a value that was never measured.
+
+The same rule applies below the metric. GitLab's merge request webhook carries no diff statistics, so those pull
+requests record `null` rather than zero lines, PR size excludes them, and the dashboard reports how many were left out:
+
+> **8 records excluded.** Pull requests whose provider did not report diff statistics. They are excluded rather than
+> counted as zero lines.
+
+A smaller number of real observations beats a larger number of fabricated ones.
+
+### Two providers, one set of metrics
+
+| | GitHub | GitLab |
+| --- | --- | --- |
+| Authenticity | HMAC-SHA256 over raw bytes | `X-Gitlab-Token` bearer secret, constant-time (GitLab offers no HMAC — TLS is required) |
+| Webhooks | pull requests, reviews, review comments, CI runs, deployments | merge requests, approvals, diff notes, pipelines, deployments |
+| Backfill | REST | REST, plus GraphQL for diff statistics, which GitLab's REST API does not expose |
+| Quirks handled | — | `iid` vs `id`, three timestamp formats, no `merged_at` on webhooks, queue time as a duration rather than a start time, `short_sha` on deployments |
+
+Adding GitLab required no change to the ingestion pipeline, metric engine, investigations or UI — which was the point of
+the provider boundary. It did require one honest change to the schema: see `additions` above.
 
 ### Change intelligence
 
@@ -156,10 +177,21 @@ pnpm db:migrate
 
 Create a webhook endpoint through the API, then point a GitHub webhook at the URL it returns and subscribe to:
 
+GitHub:
+
 ```
 push, pull_request, pull_request_review, pull_request_review_comment,
 workflow_run, deployment, deployment_status
 ```
+
+GitLab (project webhook settings):
+
+```
+push_events, merge_requests_events, note_events, pipeline_events, deployment_events
+```
+
+GitLab authenticates with a bearer token rather than a body signature, so **serve the endpoint over TLS** and leave
+"Enable SSL verification" on.
 
 Run the worker alongside the app:
 
@@ -273,15 +305,15 @@ nobody else.
 ## Testing
 
 ```bash
-pnpm test              # 219 unit + integration + security tests
-pnpm test:e2e          # 22 Playwright tests against a production build
+pnpm test              # 288 unit + integration + security tests
+pnpm test:e2e          # 25 Playwright tests against a production build
 pnpm typecheck
 pnpm lint
 pnpm a11y              # contrast, heading order, landmarks, accessible names
 pnpm bench
 ```
 
-**219 unit, integration and security tests, plus 22 end-to-end tests.** Every integration and security test runs
+**288 unit, integration and security tests, plus 25 end-to-end tests.** Every integration and security test runs
 against a real, freshly-migrated PostgreSQL 16. The end-to-end suite runs against a production build and authenticates
 with a real API token, not a development bypass.
 
@@ -293,7 +325,8 @@ right repository for the right reason.
 Accessibility is audited across all thirteen pages for WCAG AA contrast, heading order, landmarks and accessible names
 (`pnpm a11y`). All pass.
 
-Security tests cover webhook spoofing (unsigned, wrongly signed, wrong algorithm, wrong endpoint, tampered body),
+Security tests cover webhook spoofing for both providers (unsigned, wrongly signed, wrong algorithm, wrong endpoint,
+tampered body, GitHub signature presented to a GitLab endpoint, token prefix),
 tenant isolation through the HTTP layer (cross-org reads, scoped metrics, exports, AI answers, secret leakage), SQL
 injection against the guard (20 rejected patterns, including keywords hidden in string literals), and exactly which
 tables each database role may reach.
@@ -337,7 +370,8 @@ AI · Vitest · Playwright · pnpm workspaces
 
 ## Roadmap
 
-- GitLab, CircleCI and Jenkins adapters — event mappings already written down, including where they do not map cleanly
+- CircleCI and Jenkins adapters — event mappings already written down, including where they do not map cleanly
+- GitLab commit-author resolution during backfill (webhook pushes attribute commits to the pusher)
 - Incident data for a true DORA change failure rate (the current `failed_deployment_rate` is a lower bound and says so)
 - Per-branch snapshot scopes
 - Alerting on anomalies (webhook, Slack)

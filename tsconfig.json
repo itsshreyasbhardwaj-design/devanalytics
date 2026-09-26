@@ -49,6 +49,9 @@
       ],
       "@devanalytics/runtime": [
         "./packages/runtime/src/index.ts"
+      ],
+      "@devanalytics/gitlab": [
+        "./packages/gitlab/src/index.ts"
       ]
     }
   },

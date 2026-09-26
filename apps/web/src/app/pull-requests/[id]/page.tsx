@@ -63,7 +63,19 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Author" value={pr.authorLogin ?? 'unknown'} />
         <Stat label="Branch" value={`${pr.headBranch} → ${pr.baseBranch}`} />
-        <Stat label="Lines changed" value={`+${pr.additions.toLocaleString('en-US')} / −${pr.deletions.toLocaleString('en-US')}`} hint={`${pr.changedFiles} files`} />
+        <Stat
+          label="Lines changed"
+          value={
+            pr.additions === null || pr.deletions === null
+              ? 'Not reported'
+              : `+${pr.additions.toLocaleString('en-US')} / −${pr.deletions.toLocaleString('en-US')}`
+          }
+          hint={
+            pr.additions === null
+              ? 'This provider does not report diff statistics on its webhooks'
+              : `${pr.changedFiles ?? '?'} files`
+          }
+        />
         <Stat label="Commits" value={String(pr.commitCount)} />
         <Stat label="Cycle time" value={fmt(detail.durations.cycleTimeHours)} hint="ready for review → merged" />
         <Stat label="Time to first review" value={fmt(detail.durations.timeToFirstReviewHours)} hint="ready for review → first review" />

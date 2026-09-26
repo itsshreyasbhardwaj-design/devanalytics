@@ -259,3 +259,97 @@ describe('webhook spoofing', () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe('GitLab webhook authentication', () => {
+  let db: Database;
+  let api: TestApi;
+  let orgId: string;
+  const GITLAB_ENDPOINT = 'endpoint-gitlab';
+  const GITLAB_SECRET = 'gitlab-endpoint-secret-value';
+
+  const body = JSON.stringify({
+    object_kind: 'merge_request',
+    user: { id: 1, username: 'attacker', name: 'Attacker' },
+    project: {
+      id: 15, name: 'checkout', path_with_namespace: 'fixture-co/checkout',
+      default_branch: 'main', visibility_level: 0, namespace: 'fixture-co',
+      web_url: '', homepage: '', url: '',
+    },
+    object_attributes: {
+      id: 1, iid: 1, title: 'spoof', state: 'opened', action: 'open',
+      created_at: '2026-03-01 00:00:00 UTC', updated_at: '2026-03-01 00:00:00 UTC',
+      target_branch: 'main', source_branch: 'x', draft: false,
+    },
+  });
+
+  beforeAll(async () => {
+    db = await testDatabase();
+    const fixture = await loadFixture(db);
+    orgId = fixture.orgId;
+    api = createTestApi(db, [{ endpointId: GITLAB_ENDPOINT, orgId, secret: GITLAB_SECRET, provider: 'gitlab' }]);
+  }, 180_000);
+
+  afterAll(async () => {
+    await db.close();
+  });
+
+  const post = (headers: Record<string, string>, endpointId = GITLAB_ENDPOINT) =>
+    api.handle(new Request(`http://api.test/api/v1/webhooks/gitlab/${endpointId}`, { method: 'POST', body, headers }));
+
+  const eventCount = () =>
+    db.withOrg(orgId, (sql) => sql.value<number>(`select count(*)::int from events`)).then((n) => Number(n));
+
+  it('rejects a delivery with no token', async () => {
+    const before = await eventCount();
+    const res = await post({ 'x-gitlab-event': 'Merge Request Hook' });
+    expect(res.status).toBe(401);
+    expect(await eventCount()).toBe(before);
+  });
+
+  it('rejects a delivery with the wrong token', async () => {
+    const res = await post({ 'x-gitlab-event': 'Merge Request Hook', 'x-gitlab-token': 'not-the-secret' });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a token that is a prefix of the real one', async () => {
+    const res = await post({ 'x-gitlab-event': 'Merge Request Hook', 'x-gitlab-token': GITLAB_SECRET.slice(0, 10) });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a GitHub-style signature presented to a GitLab endpoint', async () => {
+    const res = await post({ 'x-gitlab-event': 'Merge Request Hook', 'x-hub-signature-256': `sha256=${'0'.repeat(64)}` });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a valid token presented to an unknown endpoint', async () => {
+    const res = await post({ 'x-gitlab-event': 'Merge Request Hook', 'x-gitlab-token': GITLAB_SECRET }, 'some-other-endpoint');
+    expect(res.status).toBe(401);
+  });
+
+  it('does not store the body of a rejected delivery', async () => {
+    await post({ 'x-gitlab-event': 'Merge Request Hook', 'x-gitlab-token': 'wrong' });
+    const rows = await db.unscoped((sql) =>
+      sql.query<{ signature_valid: boolean; body: string | null }>(
+        `select signature_valid, body from webhook_deliveries where provider = 'gitlab' order by received_at desc limit 1`,
+      ),
+    );
+    expect(rows.rows[0]?.signature_valid).toBe(false);
+    expect(rows.rows[0]?.body).toBeNull();
+  });
+
+  it('accepts a correctly-tokened delivery', async () => {
+    const before = await eventCount();
+    const res = await post({ 'x-gitlab-event': 'Merge Request Hook', 'x-gitlab-event-uuid': 'ok-1', 'x-gitlab-token': GITLAB_SECRET });
+    expect(res.status).toBe(202);
+    expect(await eventCount()).toBe(before + 1);
+  });
+
+  it('never returns a GitLab endpoint secret in any response', async () => {
+    const token = await issueToken(db, orgId, 'owner', 'gitlab-leak-check');
+    for (const path of ['/api/v1/me', '/api/v1/organization', '/api/v1/events?limit=50', '/api/v1/repositories']) {
+      const res = await api.handle(new Request(`http://api.test${path}`, { headers: { authorization: `Bearer ${token}` } }));
+      const text = await res.text();
+      expect(text, path).not.toContain(GITLAB_SECRET);
+    }
+  });
+});

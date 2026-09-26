@@ -267,7 +267,7 @@ export class Investigator {
       const rows = await sql.many<{
         id: string; number: number; title: string; full_name: string; login: string | null;
         ready_for_review_at: Date | null; first_review_at: Date | null; merged_at: Date | null;
-        additions: number; deletions: number; hours: number | null;
+        additions: number | null; deletions: number | null; hours: number | null;
       }>(
         `select p.id, p.number, p.title, r.full_name, u.login,
                 p.ready_for_review_at, p.first_review_at, p.merged_at, p.additions, p.deletions,
@@ -291,7 +291,8 @@ export class Investigator {
         detail: {
           repository: r.full_name,
           author: r.login,
-          linesChanged: r.additions + r.deletions,
+          // Null rather than zero when the provider reported no diff statistics.
+          linesChanged: r.additions === null || r.deletions === null ? null : r.additions + r.deletions,
           cycleTimeHours: r.hours === null ? null : Number(Number(r.hours).toFixed(2)),
           readyForReviewAt: r.ready_for_review_at ? new Date(r.ready_for_review_at).toISOString() : null,
           firstReviewAt: r.first_review_at ? new Date(r.first_review_at).toISOString() : null,

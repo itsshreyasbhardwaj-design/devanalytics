@@ -62,6 +62,7 @@ GitHub / GitLab / CircleCI / Jenkins
 | `db` | Schema, migrations, driver abstraction (embedded Postgres and node-postgres), org-scoped access, secret encryption. |
 | `event-ingestion` | Webhook receiver, idempotency, queue, projector, worker, provider registry. |
 | `github` | GitHub webhook adapter and REST backfill. The only GitHub-aware code in the system. |
+| `gitlab` | GitLab webhook adapter and REST/GraphQL backfill. The only GitLab-aware code in the system. |
 | `metrics` | Metric registry, fact queries, the analytics engine, snapshots, formatting. |
 | `anomaly-detection` | Robust statistics and the detector. Pure functions; no database access. |
 | `investigations` | Contribution decomposition, correlation, the investigator, scheduled detection. |
@@ -189,6 +190,38 @@ Implement `WebhookAdapter` (signature verification and normalization to canonica
 `RepositorySource` (backfill). Register it. Nothing else in the system changes — the metric engine, snapshots, detection,
 investigations, API and UI never name a provider.
 
-The event mappings for GitLab, CircleCI and Jenkins are written down in `packages/event-ingestion/src/providers/planned.ts`,
+The event mappings for CircleCI and Jenkins are written down in `packages/event-ingestion/src/providers/planned.ts`,
 including the parts that do not map cleanly (CircleCI reports no queue timestamp, so `ci_queue_time` must return
 `insufficient_data` rather than zero for CircleCI-only repositories).
+
+### What GitLab actually cost
+
+GitLab was the first provider added after GitHub, and it is a useful measure of whether the boundary works. It required
+no change to ingestion, metrics, detection, investigations or the UI. It required four things inside its own adapter and
+one honest change to the schema.
+
+**Timestamps.** GitLab emits three formats, only one of which is ISO-8601: `2017-09-20 08:31:45 UTC`,
+`2021-04-28 21:50:00 +0200`, and `2011-12-12T14:27:31+02:00`. V8 happens to parse the first; other engines do not. A
+naive `replace(' ', 'T')` would read the second as UTC and shift every duration metric by two hours. All of them pass
+through `parseGitLabTimestamp`, which returns null rather than inventing a time.
+
+**Identity.** A merge request has both an `id` (globally unique) and an `iid` (the project-scoped number a human sees).
+The canonical `number` is the `iid`; `providerPrId` is the `id`. Using `id` would produce pull request numbers in the
+tens of thousands that match nothing a user can find.
+
+**Missing facts.** The merge request webhook has no `merged_at`, no `closed_at` and no diff statistics. Merge time is
+taken from the update timestamp of the delivery reporting the merge — accurate to webhook latency, and stated as such.
+Diff statistics do not exist in GitLab's REST API at all; backfill fetches them through GraphQL `diffStatsSummary`.
+
+**Reconstructed facts.** Pipelines report queue time as a duration in seconds rather than a start timestamp, so the
+start is `created_at + queued_duration` — and stays null when GitLab omits the duration. Deployments carry only an
+eight-character `short_sha`, which can never match a stored 40-character hash; the full sha is recovered from the last
+path segment of `commit_url`, without which no GitLab deployment could be attributed to a merge request and lead time
+would exclude all of them. Approvals are system notes rather than a first-class resource, so backfill reconstructs
+approval timestamps from the notes feed — GitLab's approvals endpoint reports who approved but not when, and "when" is
+the entire content of review latency.
+
+**The schema change.** `pull_requests.additions` was `not null default 0`, which is safe only while every provider
+reports diff statistics on every event. GitLab does not, so those columns became nullable and `pr_size` now excludes
+unknown sizes and reports the excluded count. This is the one place where a second provider changed something outside
+its own adapter, and it changed it in the direction the product already required: unknown is not zero.

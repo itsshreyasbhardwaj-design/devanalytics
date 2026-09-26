@@ -30,28 +30,6 @@ export interface PlannedMapping {
   notes: string[];
 }
 
-export const GITLAB_MAPPING: PlannedMapping = {
-  provider: 'gitlab',
-  signature: 'X-Gitlab-Token, compared in constant time against the stored endpoint secret (GitLab sends the token itself, not an HMAC).',
-  events: {
-    'Push Hook': 'push',
-    'Merge Request Hook/open': 'pull_request.opened',
-    'Merge Request Hook/merge': 'pull_request.merged',
-    'Merge Request Hook/close': 'pull_request.closed',
-    'Merge Request Hook/reopen': 'pull_request.reopened',
-    'Note Hook (DiffNote)': 'review_comment.created',
-    'Merge Request Hook/approved': 'review.submitted',
-    'Pipeline Hook/running': 'workflow_run.started',
-    'Pipeline Hook/success|failed': 'workflow_run.completed',
-    'Deployment Hook': 'deployment.status_changed',
-  },
-  notes: [
-    'GitLab approvals are a separate resource from notes; both map onto review.submitted with different states.',
-    'Pipeline "stages" have no GitHub analogue and are not modelled; only the pipeline-level run is ingested.',
-    'Draft status is the "Draft:" title prefix, so ready_for_review_at must be derived from the title change in the MR hook.',
-  ],
-};
-
 export const CIRCLECI_MAPPING: PlannedMapping = {
   provider: 'circleci',
   signature: 'circleci-signature header, v1=<hmac-sha256 of the raw body>.',
@@ -78,7 +56,16 @@ export const JENKINS_MAPPING: PlannedMapping = {
   ],
 };
 
-export const PLANNED_PROVIDERS: PlannedMapping[] = [GITLAB_MAPPING, CIRCLECI_MAPPING, JENKINS_MAPPING];
+export const PLANNED_PROVIDERS: PlannedMapping[] = [CIRCLECI_MAPPING, JENKINS_MAPPING];
+
+/**
+ * GitLab was planned here and is now implemented in `@devanalytics/gitlab`.
+ * Implementing it required no change to the ingestion pipeline, the metric
+ * engine or the UI, which was the point of this boundary — but it did surface
+ * one thing the mapping had not anticipated: GitLab's merge request webhook
+ * carries no diff statistics, so `pull_requests.additions` had to become
+ * nullable rather than default to zero. See migration 0008.
+ */
 
 export class PlannedWebhookAdapter implements WebhookAdapter {
   constructor(readonly mapping: PlannedMapping) {}

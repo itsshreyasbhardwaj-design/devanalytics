@@ -219,8 +219,11 @@ export class EvidenceCollector {
           metric: plan.metric,
           scope: String(e.detail.repository ?? scopeLabel),
           window: plan.window,
-          statement: `${e.label} took ${e.detail.cycleTimeHours ?? 'unknown'} hours with ${e.detail.linesChanged ?? 'unknown'} lines changed.`,
-          values: [Number(e.detail.cycleTimeHours ?? 0), Number(e.detail.linesChanged ?? 0)],
+          statement: `${e.label} took ${e.detail.cycleTimeHours ?? 'unknown'} hours with ${e.detail.linesChanged ?? 'an unreported number of'} lines changed.`,
+          values: [
+            ...(e.detail.cycleTimeHours === null || e.detail.cycleTimeHours === undefined ? [] : [Number(e.detail.cycleTimeHours)]),
+            ...(e.detail.linesChanged === null || e.detail.linesChanged === undefined ? [] : [Number(e.detail.linesChanged)]),
+          ],
           sampleSize: 1,
           href: e.url,
         });

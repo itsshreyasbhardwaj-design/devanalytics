@@ -141,8 +141,8 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle>Providers</CardTitle>
             <p className="text-xs text-slate-400">
-              GitHub is implemented. The others have their event mappings written down and adapters stubbed; adding one touches
-              nothing outside its adapter.
+              GitHub and GitLab are implemented. The others have their event mappings written down and adapters stubbed;
+              adding one touches nothing outside its adapter.
             </p>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -153,6 +153,21 @@ export default async function SettingsPage() {
               </div>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
                 Webhooks and REST backfill, HMAC-SHA256 signature verification over raw bytes.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-emerald-900/60 bg-emerald-950/20 p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-100">GitLab</span>
+                <Badge tone="good">implemented</Badge>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                Webhooks and REST/GraphQL backfill. GitLab authenticates with a bearer token rather than a body
+                signature, so endpoints must be served over TLS.
+              </p>
+              <p className="mt-1.5 text-[11px] text-slate-400">
+                Merge request webhooks carry no diff statistics, so PR size stays unknown until backfill runs rather
+                than being recorded as zero.
               </p>
             </div>
             {PLANNED_PROVIDERS.map((p) => (

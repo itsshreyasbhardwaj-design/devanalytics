@@ -82,9 +82,10 @@ export interface PullRequest {
   mergedAt: string | null;
   closedAt: string | null;
   reopenedCount: number;
-  additions: number;
-  deletions: number;
-  changedFiles: number;
+  /** Null when the provider did not report diff statistics. Never coerced to zero. */
+  additions: number | null;
+  deletions: number | null;
+  changedFiles: number | null;
   commitCount: number;
   mergeCommitSha: string | null;
 }
