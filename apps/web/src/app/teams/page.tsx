@@ -58,7 +58,7 @@ export default async function TeamsPage({ searchParams }: { searchParams: Promis
                 {rows.map(({ team, metrics }) => (
                   <tr key={team.id} className="hover:bg-slate-900/50">
                     <Td className="font-medium text-slate-100">{team.name}</Td>
-                    <Td className="text-right tabular-nums text-slate-500">{team.repos}</Td>
+                    <Td className="text-right tabular-nums text-slate-400">{team.repos}</Td>
                     {metrics.map((m) => (
                       <Td key={m.metric} className="text-right tabular-nums">
                         {m.value.result.status === 'ok' ? (
@@ -66,9 +66,9 @@ export default async function TeamsPage({ searchParams }: { searchParams: Promis
                             {formatMetric(m.metric, m.value.result)}
                           </Link>
                         ) : (
-                          <span className="text-[11px] text-slate-500">{INSUFFICIENT_DATA_LABEL}</span>
+                          <span className="text-[11px] text-slate-400">{INSUFFICIENT_DATA_LABEL}</span>
                         )}
-                        <div className="text-[10px] text-slate-600">{m.value.result.sampleSize} obs</div>
+                        <div className="text-[10px] text-slate-400">{m.value.result.sampleSize} obs</div>
                       </Td>
                     ))}
                   </tr>

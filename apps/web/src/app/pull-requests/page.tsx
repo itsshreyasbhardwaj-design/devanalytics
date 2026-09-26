@@ -72,7 +72,7 @@ export default async function PullRequestsPage({ searchParams }: { searchParams:
                 {rows.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-900/50">
                     <Td className="max-w-40 truncate text-slate-400">{p.repoFullName}</Td>
-                    <Td className="tabular-nums text-slate-500">{p.number}</Td>
+                    <Td className="tabular-nums text-slate-400">{p.number}</Td>
                     <Td className="max-w-sm truncate">
                       <Link href={`/pull-requests/${p.id}`} className="hover:text-sky-400">{p.title}</Link>
                     </Td>
@@ -82,8 +82,8 @@ export default async function PullRequestsPage({ searchParams }: { searchParams:
                       {p.reopenedCount > 0 && <Badge tone="warn" className="ml-1">reopened</Badge>}
                     </Td>
                     <Td className="text-right tabular-nums">{(p.additions + p.deletions).toLocaleString('en-US')}</Td>
-                    <Td className="text-right tabular-nums">{hours(p.readyForReviewAt, p.firstReviewAt) ?? <span className="text-slate-600">—</span>}</Td>
-                    <Td className="text-right tabular-nums">{hours(p.readyForReviewAt, p.mergedAt) ?? <span className="text-slate-600">—</span>}</Td>
+                    <Td className="text-right tabular-nums">{hours(p.readyForReviewAt, p.firstReviewAt) ?? <span className="text-slate-400">—</span>}</Td>
+                    <Td className="text-right tabular-nums">{hours(p.readyForReviewAt, p.mergedAt) ?? <span className="text-slate-400">—</span>}</Td>
                   </tr>
                 ))}
               </tbody>

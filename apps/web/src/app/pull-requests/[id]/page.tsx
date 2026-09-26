@@ -74,7 +74,7 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Timeline</CardTitle>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Every ingested event for this pull request, in order. This is what the delivery metrics are computed from.
           </p>
         </CardHeader>
@@ -86,12 +86,12 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone={KIND_TONES[entry.kind] ?? 'neutral'}>{KIND_LABELS[entry.kind] ?? entry.kind}</Badge>
                   <span className="text-sm text-slate-200">{entry.label}</span>
-                  <time className="ml-auto font-mono text-[11px] text-slate-500" dateTime={entry.at}>
+                  <time className="ml-auto font-mono text-[11px] text-slate-400" dateTime={entry.at}>
                     {entry.at.replace('T', ' ').slice(0, 19)}
                   </time>
                 </div>
                 {Object.entries(entry.detail).filter(([, v]) => v !== null && v !== undefined).length > 0 && (
-                  <p className="mt-0.5 text-[11px] text-slate-500">
+                  <p className="mt-0.5 text-[11px] text-slate-400">
                     {Object.entries(entry.detail)
                       .filter(([, v]) => v !== null && v !== undefined)
                       .map(([k, v]) => `${k}: ${v}`)
@@ -109,7 +109,7 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
           <CardHeader><CardTitle>Reviews</CardTitle></CardHeader>
           <CardContent className="p-0">
             {detail.reviewers.length === 0 ? (
-              <p className="px-5 py-6 text-xs text-slate-500">
+              <p className="px-5 py-6 text-xs text-slate-400">
                 No reviews recorded. This pull request contributes to review participation but not to time to first review.
               </p>
             ) : (
@@ -120,7 +120,7 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
                     <tr key={i}>
                       <Td>{r.login ?? 'unknown'}</Td>
                       <Td><Badge tone={r.state === 'approved' ? 'good' : r.state === 'changes_requested' ? 'bad' : 'muted'}>{r.state.replace('_', ' ')}</Badge></Td>
-                      <Td className="text-right font-mono text-[11px] text-slate-500">{r.submittedAt.replace('T', ' ').slice(0, 16)}</Td>
+                      <Td className="text-right font-mono text-[11px] text-slate-400">{r.submittedAt.replace('T', ' ').slice(0, 16)}</Td>
                     </tr>
                   ))}
                 </tbody>
@@ -133,7 +133,7 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
           <CardHeader><CardTitle>CI and deployments</CardTitle></CardHeader>
           <CardContent className="p-0">
             {detail.workflowRuns.length === 0 && detail.deployments.length === 0 ? (
-              <p className="px-5 py-6 text-xs text-slate-500">No CI runs or deployments are linked to this pull request.</p>
+              <p className="px-5 py-6 text-xs text-slate-400">No CI runs or deployments are linked to this pull request.</p>
             ) : (
               <Table>
                 <thead><tr><Th>Item</Th><Th>Outcome</Th><Th className="text-right">Queue</Th><Th className="text-right">Duration</Th></tr></thead>
@@ -150,8 +150,8 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
                     <tr key={d.id}>
                       <Td>{d.environment}{d.isProduction && <Badge tone="info" className="ml-1">production</Badge>}</Td>
                       <Td><Badge tone={d.state === 'success' ? 'good' : d.state === 'failure' ? 'bad' : 'muted'}>{d.state}</Badge></Td>
-                      <Td className="text-right text-slate-600">—</Td>
-                      <Td className="text-right font-mono text-[11px] text-slate-500">{d.createdAt.slice(0, 16).replace('T', ' ')}</Td>
+                      <Td className="text-right text-slate-400">—</Td>
+                      <Td className="text-right font-mono text-[11px] text-slate-400">{d.createdAt.slice(0, 16).replace('T', ' ')}</Td>
                     </tr>
                   ))}
                 </tbody>
@@ -161,7 +161,7 @@ export default async function PullRequestPage({ params }: { params: Promise<{ id
         </Card>
       </div>
 
-      <p className="mt-6 text-xs text-slate-500">
+      <p className="mt-6 text-xs text-slate-400">
         <Link href="/explorer" className="text-sky-400 hover:underline">Data explorer</Link> shows the raw provider events behind this page.
       </p>
     </>
@@ -172,9 +172,9 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <Card>
       <CardContent className="flex flex-col gap-0.5">
-        <span className="text-[11px] uppercase tracking-wider text-slate-500">{label}</span>
+        <span className="text-[11px] uppercase tracking-wider text-slate-400">{label}</span>
         <span className="truncate text-sm font-semibold text-slate-100">{value}</span>
-        {hint && <span className="text-[11px] text-slate-500">{hint}</span>}
+        {hint && <span className="text-[11px] text-slate-400">{hint}</span>}
       </CardContent>
     </Card>
   );

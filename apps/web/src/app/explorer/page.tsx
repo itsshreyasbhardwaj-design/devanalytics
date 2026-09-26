@@ -72,7 +72,7 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
             <Table>
               <thead><tr><Th>Type</Th><Th className="text-right">Count</Th><Th className="text-right">Unprocessed</Th></tr></thead>
               <tbody>
-                {counts.length === 0 && <tr><Td colSpan={3} className="text-center text-xs text-slate-500">No events ingested yet.</Td></tr>}
+                {counts.length === 0 && <tr><Td colSpan={3} className="text-center text-xs text-slate-400">No events ingested yet.</Td></tr>}
                 {counts.map((c) => (
                   <tr key={c.type}>
                     <Td className="font-mono text-[11px]">
@@ -80,7 +80,7 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
                     </Td>
                     <Td className="text-right tabular-nums">{Number(c.n).toLocaleString('en-US')}</Td>
                     <Td className="text-right tabular-nums">
-                      {Number(c.unprocessed) > 0 ? <span className="text-amber-400">{c.unprocessed}</span> : <span className="text-slate-600">0</span>}
+                      {Number(c.unprocessed) > 0 ? <span className="text-amber-400">{c.unprocessed}</span> : <span className="text-slate-400">0</span>}
                     </Td>
                   </tr>
                 ))}
@@ -92,13 +92,13 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle>Webhook deliveries</CardTitle>
-            <p className="text-xs text-slate-500">Signature outcomes, for auditing.</p>
+            <p className="text-xs text-slate-400">Signature outcomes, for auditing.</p>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <thead><tr><Th>Provider</Th><Th>Signature</Th><Th className="text-right">Status</Th><Th className="text-right">Count</Th></tr></thead>
               <tbody>
-                {deliveries.rows.length === 0 && <tr><Td colSpan={4} className="text-center text-xs text-slate-500">No deliveries received yet.</Td></tr>}
+                {deliveries.rows.length === 0 && <tr><Td colSpan={4} className="text-center text-xs text-slate-400">No deliveries received yet.</Td></tr>}
                 {deliveries.rows.map((d, i) => (
                   <tr key={i}>
                     <Td>{d.provider}</Td>
@@ -115,19 +115,19 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle>Queue</CardTitle>
-            <p className="text-xs text-slate-500">Work scheduled out of the request path.</p>
+            <p className="text-xs text-slate-400">Work scheduled out of the request path.</p>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <thead><tr><Th>Queue</Th><Th className="text-right">Pending</Th><Th className="text-right">Exhausted</Th></tr></thead>
               <tbody>
-                {queue.rows.length === 0 && <tr><Td colSpan={3} className="text-center text-xs text-slate-500">Queue is empty.</Td></tr>}
+                {queue.rows.length === 0 && <tr><Td colSpan={3} className="text-center text-xs text-slate-400">Queue is empty.</Td></tr>}
                 {queue.rows.map((q) => (
                   <tr key={q.queue}>
                     <Td className="font-mono text-[11px]">{q.queue}</Td>
                     <Td className="text-right tabular-nums">{q.pending}</Td>
                     <Td className="text-right tabular-nums">
-                      {Number(q.failed) > 0 ? <span className="text-rose-400">{q.failed}</span> : <span className="text-slate-600">0</span>}
+                      {Number(q.failed) > 0 ? <span className="text-rose-400">{q.failed}</span> : <span className="text-slate-400">0</span>}
                     </Td>
                   </tr>
                 ))}
@@ -154,7 +154,7 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
         </CardHeader>
         <CardContent className="p-0">
           {events.length === 0 ? (
-            <p className="px-5 py-8 text-center text-xs text-slate-500">
+            <p className="px-5 py-8 text-center text-xs text-slate-400">
               No events match. Events appear here as soon as a signed webhook is accepted.
             </p>
           ) : (
@@ -167,8 +167,8 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
                   <tr key={String(e.id)}>
                     <Td className="font-mono text-[11px]">{String(e.type)}</Td>
                     <Td className="text-slate-400">{e.full_name ? String(e.full_name) : '—'}</Td>
-                    <Td className="font-mono text-[11px] text-slate-500">{new Date(String(e.occurred_at)).toISOString().slice(0, 19).replace('T', ' ')}</Td>
-                    <Td className="font-mono text-[11px] text-slate-500">{new Date(String(e.received_at)).toISOString().slice(0, 19).replace('T', ' ')}</Td>
+                    <Td className="font-mono text-[11px] text-slate-400">{new Date(String(e.occurred_at)).toISOString().slice(0, 19).replace('T', ' ')}</Td>
+                    <Td className="font-mono text-[11px] text-slate-400">{new Date(String(e.received_at)).toISOString().slice(0, 19).replace('T', ' ')}</Td>
                     <Td>
                       {e.process_error ? (
                         <Badge tone="bad" title={String(e.process_error)}>failed</Badge>
@@ -178,7 +178,7 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
                         <Badge tone="warn">queued</Badge>
                       )}
                     </Td>
-                    <Td className="max-w-40 truncate font-mono text-[10px] text-slate-600">{String(e.idempotency_key)}</Td>
+                    <Td className="max-w-40 truncate font-mono text-[10px] text-slate-400">{String(e.idempotency_key)}</Td>
                   </tr>
                 ))}
               </tbody>

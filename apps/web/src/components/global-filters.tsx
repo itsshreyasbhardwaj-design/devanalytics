@@ -46,7 +46,7 @@ export function GlobalFilters({
       role="group"
       aria-label="Global filters"
     >
-      <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+      <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-400">
         <Filter className="h-3.5 w-3.5" aria-hidden /> Filters
       </span>
 
@@ -101,7 +101,7 @@ export function GlobalFilters({
         title="Exclude pull requests and commits authored by bots"
         className={cn(
           'flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors',
-          excludeBots ? 'border-slate-700 bg-slate-800 text-slate-200' : 'border-slate-800 bg-slate-900 text-slate-500',
+          excludeBots ? 'border-slate-700 bg-slate-800 text-slate-200' : 'border-slate-800 bg-slate-900 text-slate-400',
         )}
       >
         <Bot className="h-3.5 w-3.5" aria-hidden />
@@ -115,7 +115,7 @@ export function GlobalFilters({
         title="Restrict deployment metrics to production environments"
         className={cn(
           'flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors',
-          productionOnly ? 'border-slate-700 bg-slate-800 text-slate-200' : 'border-slate-800 bg-slate-900 text-slate-500',
+          productionOnly ? 'border-slate-700 bg-slate-800 text-slate-200' : 'border-slate-800 bg-slate-900 text-slate-400',
         )}
       >
         <Rocket className="h-3.5 w-3.5" aria-hidden />

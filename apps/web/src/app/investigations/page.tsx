@@ -70,10 +70,10 @@ export default async function InvestigationsPage({ searchParams }: { searchParam
                     <tr key={s.id}>
                       <Td>{s.title}</Td>
                       <Td className="text-slate-400">{requireMetricDefinition(s.metric).name}</Td>
-                      <Td className="font-mono text-[11px] text-slate-500">
+                      <Td className="font-mono text-[11px] text-slate-400">
                         {new Date(s.window_start).toISOString().slice(0, 10)} → {new Date(s.window_end).toISOString().slice(0, 10)}
                       </Td>
-                      <Td className="text-right font-mono text-[11px] text-slate-500">{new Date(s.created_at).toISOString().slice(0, 16).replace('T', ' ')}</Td>
+                      <Td className="text-right font-mono text-[11px] text-slate-400">{new Date(s.created_at).toISOString().slice(0, 16).replace('T', ' ')}</Td>
                       <Td className="text-right">
                         <Link href={`/investigations/${s.id}`} className="text-xs text-sky-400 hover:underline">Open</Link>
                       </Td>
@@ -139,7 +139,7 @@ export default async function InvestigationsPage({ searchParams }: { searchParam
         <Card key={dim.dimension} className="mb-6">
           <CardHeader>
             <CardTitle>What accounts for the change, by {dim.dimension}</CardTitle>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               Exact arithmetic decomposition. <strong>Own change</strong> is the slice&rsquo;s own values moving;{' '}
               <strong>volume shift</strong> is its share of the total moving. Residual: {dim.residual.toFixed(6)}.
             </p>
@@ -157,14 +157,14 @@ export default async function InvestigationsPage({ searchParams }: { searchParam
                 {dim.contributors.map((c) => (
                   <tr key={c.key}>
                     <Td className="max-w-56 truncate">{c.label}</Td>
-                    <Td className="text-right tabular-nums">{c.currentValue === null ? <span className="text-slate-600">—</span> : c.currentValue.toFixed(2)}</Td>
-                    <Td className="text-right tabular-nums">{c.baselineValue === null ? <span className="text-slate-600">—</span> : c.baselineValue.toFixed(2)}</Td>
+                    <Td className="text-right tabular-nums">{c.currentValue === null ? <span className="text-slate-400">—</span> : c.currentValue.toFixed(2)}</Td>
+                    <Td className="text-right tabular-nums">{c.baselineValue === null ? <span className="text-slate-400">—</span> : c.baselineValue.toFixed(2)}</Td>
                     <Td className={`text-right tabular-nums font-medium ${c.contributionShare > 0 ? 'text-rose-300' : 'text-emerald-300'}`}>
                       {(c.contributionShare * 100).toFixed(1)}%
                     </Td>
                     <Td className="text-right tabular-nums text-slate-400">{c.rateEffect.toFixed(2)}</Td>
                     <Td className="text-right tabular-nums text-slate-400">{c.mixEffect.toFixed(2)}</Td>
-                    <Td className="text-right tabular-nums text-slate-500">{c.sampleSize} / {c.baselineSampleSize}</Td>
+                    <Td className="text-right tabular-nums text-slate-400">{c.sampleSize} / {c.baselineSampleSize}</Td>
                   </tr>
                 ))}
               </tbody>
@@ -181,7 +181,7 @@ export default async function InvestigationsPage({ searchParams }: { searchParam
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Associated metrics</CardTitle>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Examined over the same period. These are <strong>associations</strong>, not causes — correlation here is a reason to go
             and ask the team, not a conclusion. Candidates that did not move are listed too.
           </p>
@@ -199,9 +199,9 @@ export default async function InvestigationsPage({ searchParams }: { searchParam
                   <Td className="text-right tabular-nums text-slate-400">{r.baselineLabel}</Td>
                   <Td className="text-right tabular-nums">
                     {r.comparison.relativeChange === null ? (
-                      <span className="text-slate-600">—</span>
+                      <span className="text-slate-400">—</span>
                     ) : (
-                      <span className={r.moved ? 'text-slate-200' : 'text-slate-500'}>
+                      <span className={r.moved ? 'text-slate-200' : 'text-slate-400'}>
                         {r.comparison.relativeChange >= 0 ? '+' : ''}{(r.comparison.relativeChange * 100).toFixed(1)}%
                       </span>
                     )}
@@ -227,7 +227,7 @@ export default async function InvestigationsPage({ searchParams }: { searchParam
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Records examined</CardTitle>
-            <p className="text-xs text-slate-500">The slowest pull requests in the affected repositories. Drill all the way down.</p>
+            <p className="text-xs text-slate-400">The slowest pull requests in the affected repositories. Drill all the way down.</p>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -264,9 +264,9 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <Card>
       <CardContent className="flex flex-col gap-0.5">
-        <span className="text-[11px] uppercase tracking-wider text-slate-500">{label}</span>
+        <span className="text-[11px] uppercase tracking-wider text-slate-400">{label}</span>
         <span className="text-sm font-semibold text-slate-100">{value}</span>
-        {hint && <span className="text-[11px] text-slate-500">{hint}</span>}
+        {hint && <span className="text-[11px] text-slate-400">{hint}</span>}
       </CardContent>
     </Card>
   );

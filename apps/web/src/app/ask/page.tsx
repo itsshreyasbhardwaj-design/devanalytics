@@ -39,7 +39,7 @@ export default async function AskPage() {
                 ? 'A language model is configured and will phrase the answer. Its output is discarded if it contains a figure absent from the evidence or makes a causal claim, and the assembled answer is shown instead.'
                 : 'No language model is configured, so answers are assembled directly from the evidence. This is the default and costs nothing; set OPENROUTER_API_KEY to add narration.'}
             </p>
-            <p className="text-slate-500">
+            <p className="text-slate-400">
               The platform declines questions about things it does not measure rather than guessing.
             </p>
           </CardContent>

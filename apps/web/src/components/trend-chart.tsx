@@ -57,7 +57,7 @@ export function TrendChart({
 
   if (data.length === 0) {
     return (
-      <div className="flex h-[220px] items-center justify-center rounded-lg border border-dashed border-slate-800 text-xs text-slate-500">
+      <div className="flex h-[220px] items-center justify-center rounded-lg border border-dashed border-slate-800 text-xs text-slate-400">
         No periods in this window.
       </div>
     );
@@ -94,7 +94,7 @@ export function TrendChart({
           />
         </LineChart>
       </ResponsiveContainer>
-      <p className="mt-1 px-1 text-[11px] text-slate-500">
+      <p className="mt-1 px-1 text-[11px] text-slate-400">
         {withValues} of {data.length} periods have enough data to report.
         {withValues < data.length && ' Shaded periods are below the metric’s minimum sample size and are left blank rather than plotted as zero.'}
       </p>

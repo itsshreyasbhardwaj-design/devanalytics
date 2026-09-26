@@ -58,10 +58,19 @@ export const POLICIES: Record<string, RateLimitPolicy> = {
 export class RateLimiter {
   constructor(private readonly store: RateLimitStore = new MemoryRateLimitStore()) {}
 
+  /**
+   * Each policy gets its own bucket per principal.
+   *
+   * Sharing one bucket across policies would let cheap reads drain the budget
+   * for expensive endpoints, and — because capacity is applied on refill — the
+   * smallest policy's capacity would silently become the ceiling for all of
+   * them. Browsing the dashboard would then exhaust the AI allowance.
+   */
   async check(key: string, policyName: keyof typeof POLICIES | string): Promise<{ remaining: number }> {
     const policy = POLICIES[policyName] ?? POLICIES.read;
     if (!policy) return { remaining: 0 };
-    const result = await this.store.consume(key, policy.cost, policy.capacity, policy.refillPerSecond);
+    const bucketKey = `${key}#${policyName}`;
+    const result = await this.store.consume(bucketKey, policy.cost, policy.capacity, policy.refillPerSecond);
     if (!result.allowed) throw new RateLimitedError(result.retryAfterSeconds);
     return { remaining: result.remaining };
   }

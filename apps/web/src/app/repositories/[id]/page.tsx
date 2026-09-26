@@ -61,7 +61,7 @@ export default async function RepositoryPage({
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Health</CardTitle>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Ten named metrics, each with its own sample size. Deliberately not reduced to one score.
           </p>
         </CardHeader>
@@ -79,18 +79,18 @@ export default async function RepositoryPage({
                   <tr key={m.metric}>
                     <Td><Link href={`/metrics/${m.metric}${query}`} className="hover:text-sky-400">{m.name}</Link></Td>
                     <Td className="text-right tabular-nums">
-                      {m.status === 'ok' ? m.value : <span className="text-slate-500">{INSUFFICIENT_DATA_LABEL}</span>}
+                      {m.status === 'ok' ? m.value : <span className="text-slate-400">{INSUFFICIENT_DATA_LABEL}</span>}
                     </Td>
                     <Td className="text-right tabular-nums">
                       {m.relativeChange === null ? (
-                        <span className="text-slate-600">—</span>
+                        <span className="text-slate-400">—</span>
                       ) : (
                         <span className={improving === null ? 'text-slate-400' : improving ? 'text-emerald-400' : 'text-rose-400'}>
                           {m.relativeChange >= 0 ? '+' : ''}{(m.relativeChange * 100).toFixed(1)}%
                         </span>
                       )}
                     </Td>
-                    <Td className="text-right tabular-nums text-slate-500">{m.sampleSize}</Td>
+                    <Td className="text-right tabular-nums text-slate-400">{m.sampleSize}</Td>
                   </tr>
                 );
               })}
@@ -133,7 +133,7 @@ export default async function RepositoryPage({
             <tbody>
               {prs.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-900/50">
-                  <Td className="tabular-nums text-slate-500">{p.number}</Td>
+                  <Td className="tabular-nums text-slate-400">{p.number}</Td>
                   <Td className="max-w-md truncate">
                     <Link href={`/pull-requests/${p.id}`} className="hover:text-sky-400">{p.title}</Link>
                   </Td>

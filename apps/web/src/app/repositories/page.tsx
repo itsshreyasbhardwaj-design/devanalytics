@@ -75,11 +75,11 @@ export default async function RepositoriesPage({ searchParams }: { searchParams:
                         {m.value.result.status === 'ok' ? (
                           <span className="text-slate-200">{formatMetric(m.metric, m.value.result)}</span>
                         ) : (
-                          <span className="text-[11px] text-slate-500" title={`${m.value.result.sampleSize} of ${m.value.result.minimumSampleSize} observations`}>
+                          <span className="text-[11px] text-slate-400" title={`${m.value.result.sampleSize} of ${m.value.result.minimumSampleSize} observations`}>
                             {INSUFFICIENT_DATA_LABEL}
                           </span>
                         )}
-                        <div className="text-[10px] text-slate-600">{m.value.result.sampleSize} obs</div>
+                        <div className="text-[10px] text-slate-400">{m.value.result.sampleSize} obs</div>
                       </Td>
                     ))}
                     <Td className="text-right">

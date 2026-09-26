@@ -83,13 +83,13 @@ export default async function CiPage({ searchParams }: { searchParams: Promise<S
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Where builds fail</CardTitle>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Grouped by workflow, repository and branch. Descriptive only — a high rate here is where to look, not why it happens.
           </p>
         </CardHeader>
         <CardContent className="p-0">
           {failures.length === 0 ? (
-            <p className="px-5 py-8 text-center text-xs text-slate-500">No failing runs in this window.</p>
+            <p className="px-5 py-8 text-center text-xs text-slate-400">No failing runs in this window.</p>
           ) : (
             <Table>
               <thead>
@@ -100,9 +100,9 @@ export default async function CiPage({ searchParams }: { searchParams: Promise<S
                   <tr key={i}>
                     <Td>{f.workflow}</Td>
                     <Td className="text-slate-400">{f.repository}</Td>
-                    <Td className="font-mono text-[11px] text-slate-500">{f.branch ?? '—'}</Td>
+                    <Td className="font-mono text-[11px] text-slate-400">{f.branch ?? '—'}</Td>
                     <Td className="text-right tabular-nums text-rose-400">{f.failures}</Td>
-                    <Td className="text-right tabular-nums text-slate-500">{f.total}</Td>
+                    <Td className="text-right tabular-nums text-slate-400">{f.total}</Td>
                     <Td className="text-right tabular-nums">{(Number(f.rate) * 100).toFixed(1)}%</Td>
                   </tr>
                 ))}
@@ -124,14 +124,14 @@ export default async function CiPage({ searchParams }: { searchParams: Promise<S
                 <tr key={String(r.id)}>
                   <Td>{String(r.name)}</Td>
                   <Td className="text-slate-400">{String(r.repository)}</Td>
-                  <Td className="font-mono text-[11px] text-slate-500">{r.head_branch ? String(r.head_branch) : '—'}</Td>
+                  <Td className="font-mono text-[11px] text-slate-400">{r.head_branch ? String(r.head_branch) : '—'}</Td>
                   <Td>
                     <Badge tone={r.conclusion === 'success' ? 'good' : r.conclusion === 'failure' ? 'bad' : 'muted'}>
                       {r.conclusion ? String(r.conclusion) : String(r.status)}
                     </Badge>
                   </Td>
-                  <Td className="text-right font-mono text-[11px] text-slate-500">{new Date(String(r.created_at)).toISOString().slice(0, 16).replace('T', ' ')}</Td>
-                  <Td className="text-right tabular-nums text-slate-500">
+                  <Td className="text-right font-mono text-[11px] text-slate-400">{new Date(String(r.created_at)).toISOString().slice(0, 16).replace('T', ' ')}</Td>
+                  <Td className="text-right tabular-nums text-slate-400">
                     {Number(r.run_attempt) > 1 ? <span className="text-amber-400">#{String(r.run_attempt)}</span> : String(r.run_attempt)}
                   </Td>
                 </tr>
@@ -141,7 +141,7 @@ export default async function CiPage({ searchParams }: { searchParams: Promise<S
         </CardContent>
       </Card>
 
-      <p className="mt-4 text-xs text-slate-500">
+      <p className="mt-4 text-xs text-slate-400">
         Each retry counts as a separate run, so a flaky job that passes on attempt three lowers the success rate. That is intentional —
         see <Link href="/metrics/build_success_rate" className="text-sky-400 hover:underline">the metric definition</Link>.
       </p>

@@ -77,25 +77,25 @@ export default async function MetricPage({
         <MetricTile metric={metric} result={loaded.value.result} comparison={loaded.comparison} />
         <Card>
           <CardContent className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wider text-slate-500">Previous period</span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400">Previous period</span>
             <span className="text-lg font-semibold text-slate-200">{formatMetric(metric, loaded.comparison.previous)}</span>
-            <span className="text-[11px] text-slate-500">{loaded.comparison.previous.sampleSize} observations</span>
+            <span className="text-[11px] text-slate-400">{loaded.comparison.previous.sampleSize} observations</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wider text-slate-500">Absolute change</span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400">Absolute change</span>
             <span className="text-lg font-semibold text-slate-200">
               {loaded.comparison.absoluteChange === null ? INSUFFICIENT_DATA_LABEL : loaded.comparison.absoluteChange.toFixed(2)}
             </span>
-            <span className="text-[11px] text-slate-500">{def.unit}</span>
+            <span className="text-[11px] text-slate-400">{def.unit}</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wider text-slate-500">Aggregation</span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400">Aggregation</span>
             <span className="text-lg font-semibold text-slate-200">{def.aggregation}</span>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-slate-400">
               {isAggregatable(def) ? 'Rebuilt from daily snapshots' : 'Recomputed from records; a median of medians would be wrong'}
             </span>
           </CardContent>
@@ -113,7 +113,7 @@ export default async function MetricPage({
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>History</CardTitle>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Bucketed by {filters.granularity}. Anchored on <code>{def.timeAnchor}</code>.
           </p>
         </CardHeader>
@@ -126,7 +126,7 @@ export default async function MetricPage({
         <Card key={dimension} className="mb-6">
           <CardHeader>
             <CardTitle>By {dimension}</CardTitle>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               Slices of the same window. To attribute a <em>change</em> rather than compare levels, run an investigation.
             </p>
           </CardHeader>
@@ -144,9 +144,9 @@ export default async function MetricPage({
                   <tr key={r.key}>
                     <Td className="max-w-xs truncate">{r.label}</Td>
                     <Td className="text-right tabular-nums">
-                      {r.result.status === 'ok' ? formatMetric(metric, r.result) : <span className="text-slate-500">{INSUFFICIENT_DATA_LABEL}</span>}
+                      {r.result.status === 'ok' ? formatMetric(metric, r.result) : <span className="text-slate-400">{INSUFFICIENT_DATA_LABEL}</span>}
                     </Td>
-                    <Td className="text-right tabular-nums text-slate-500">{r.result.sampleSize}</Td>
+                    <Td className="text-right tabular-nums text-slate-400">{r.result.sampleSize}</Td>
                   </tr>
                 ))}
               </tbody>
@@ -158,13 +158,13 @@ export default async function MetricPage({
       <Card>
         <CardHeader>
           <CardTitle>Underlying observations</CardTitle>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             The individual records this value is computed from — the end of every drill-down path.
           </p>
         </CardHeader>
         <CardContent className="p-0">
           {facts.length === 0 ? (
-            <p className="px-5 py-8 text-center text-xs text-slate-500">No observations in this window.</p>
+            <p className="px-5 py-8 text-center text-xs text-slate-400">No observations in this window.</p>
           ) : (
             <Table>
               <thead>
@@ -183,7 +183,7 @@ export default async function MetricPage({
         </CardContent>
       </Card>
 
-      <div className="mt-6 flex flex-wrap gap-2 text-[11px] text-slate-500">
+      <div className="mt-6 flex flex-wrap gap-2 text-[11px] text-slate-400">
         {def.caveats.map((c) => <Badge key={c} tone="muted" className="max-w-full whitespace-normal text-left">{c}</Badge>)}
       </div>
     </>

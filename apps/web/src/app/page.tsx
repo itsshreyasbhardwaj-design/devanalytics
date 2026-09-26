@@ -77,7 +77,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       )}
 
       <section aria-labelledby="delivery" className="mb-8">
-        <h2 id="delivery" className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Delivery and review</h2>
+        <h2 id="delivery" className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Delivery and review</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {delivery.map((m) => (
             <MetricTile key={m.metric} metric={m.metric} result={m.value.result} comparison={m.comparison} href={`/metrics/${m.metric}`} />
@@ -86,7 +86,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       </section>
 
       <section aria-labelledby="dora" className="mb-8">
-        <h2 id="dora" className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Delivery performance</h2>
+        <h2 id="dora" className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Delivery performance</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {dora.map((m) => (
             <MetricTile key={m.metric} metric={m.metric} result={m.value.result} comparison={m.comparison} href={`/metrics/${m.metric}`} />
@@ -98,7 +98,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>PR cycle time</CardTitle>
-            <p className="text-xs text-slate-500">{requireMetricDefinition('pr_cycle_time').formula}</p>
+            <p className="text-xs text-slate-400">{requireMetricDefinition('pr_cycle_time').formula}</p>
           </CardHeader>
           <CardContent>
             <TrendChart points={cycleSeries} unitLabel="hours" />
@@ -108,11 +108,11 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle>Open anomalies</CardTitle>
-            <p className="text-xs text-slate-500">Movements unusual against each scope&rsquo;s own history.</p>
+            <p className="text-xs text-slate-400">Movements unusual against each scope&rsquo;s own history.</p>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {anomalies.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-500">
+              <p className="py-6 text-center text-xs text-slate-400">
                 Nothing unusual detected in the periods examined. Detection needs at least 14 prior periods before it will judge a metric.
               </p>
             ) : (
@@ -126,7 +126,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
                   >
                     <div className="min-w-0">
                       <p className="truncate text-slate-200">{requireMetricDefinition(String(row.metric)).name}</p>
-                      <p className="truncate text-[11px] text-slate-500">{String(row.scope_label)}</p>
+                      <p className="truncate text-[11px] text-slate-400">{String(row.scope_label)}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       <Badge tone={row.severity === 'high' ? 'bad' : row.severity === 'medium' ? 'warn' : 'neutral'}>{String(row.severity)}</Badge>
@@ -141,7 +141,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       </div>
 
       <section aria-labelledby="flow">
-        <h2 id="flow" className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Flow and quality</h2>
+        <h2 id="flow" className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Flow and quality</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {flow.map((m) => (
             <MetricTile key={m.metric} metric={m.metric} result={m.value.result} comparison={m.comparison} href={`/metrics/${m.metric}`} compact />

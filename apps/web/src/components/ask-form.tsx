@@ -77,7 +77,7 @@ export function AskForm() {
             }}
             className="flex flex-col gap-3"
           >
-            <label htmlFor="question" className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <label htmlFor="question" className="text-xs font-medium uppercase tracking-wider text-slate-400">
               Question
             </label>
             <textarea
@@ -87,14 +87,14 @@ export function AskForm() {
               rows={3}
               maxLength={1000}
               placeholder="Why did PR cycle time increase over the last 30 days?"
-              className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
+              className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
             />
             <div className="flex items-center gap-2">
               <Button type="submit" disabled={loading || !question.trim()}>
                 {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />}
                 {loading ? 'Computing' : 'Ask'}
               </Button>
-              <span className="text-[11px] text-slate-500">Answers are computed from ingested data, not generated from memory.</span>
+              <span className="text-[11px] text-slate-400">Answers are computed from ingested data, not generated from memory.</span>
             </div>
           </form>
 
@@ -137,7 +137,7 @@ export function AskForm() {
                 </Badge>
                 {answer.insufficientData && <Badge tone="warn">insufficient data</Badge>}
               </div>
-              <p className="text-xs text-slate-500">Interpreted as: {answer.interpretation}</p>
+              <p className="text-xs text-slate-400">Interpreted as: {answer.interpretation}</p>
             </CardHeader>
             <CardContent>
               <div className="prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed text-slate-300">{answer.answer}</div>
@@ -159,12 +159,12 @@ export function AskForm() {
           <Card>
             <CardHeader>
               <CardTitle>Evidence ({answer.citations.length})</CardTitle>
-              <p className="text-xs text-slate-500">Every fact the answer is allowed to use, with its scope, window and sample size.</p>
+              <p className="text-xs text-slate-400">Every fact the answer is allowed to use, with its scope, window and sample size.</p>
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               {answer.citations.map((c, i) => (
                 <div key={c.id} className="rounded-lg border border-slate-800 px-3 py-2">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
                     <span className="font-mono text-slate-400">F{i + 1}</span>
                     <Badge tone="muted">{c.kind}</Badge>
                     <span className="truncate">{c.scope}</span>

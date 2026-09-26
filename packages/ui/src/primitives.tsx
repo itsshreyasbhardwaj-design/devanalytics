@@ -57,8 +57,18 @@ export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDiv
   return <div className={cn('flex flex-col gap-1 border-b border-slate-800 px-5 py-4', className)} {...props} />;
 }
 
-export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn('text-sm font-semibold tracking-tight text-slate-100', className)} {...props} />;
+/**
+ * A card title is a section heading, so it defaults to `h2` — directly under
+ * the page's `h1`. Pages that nest a card inside an explicit section pass
+ * `as="h3"` to keep the outline contiguous; skipping a level makes a screen
+ * reader's heading list misrepresent the page structure.
+ */
+export function CardTitle({
+  className,
+  as: Tag = 'h2',
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement> & { as?: 'h2' | 'h3' | 'h4' }) {
+  return <Tag className={cn('text-sm font-semibold tracking-tight text-slate-100', className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
@@ -77,7 +87,7 @@ const badgeVariants = cva('inline-flex items-center gap-1 rounded-full border px
       bad: 'border-rose-800 bg-rose-950/60 text-rose-300',
       warn: 'border-amber-800 bg-amber-950/60 text-amber-300',
       info: 'border-sky-800 bg-sky-950/60 text-sky-300',
-      muted: 'border-slate-800 bg-slate-900 text-slate-500',
+      muted: 'border-slate-800 bg-slate-900 text-slate-400',
     },
   },
   defaultVariants: { tone: 'neutral' },
@@ -100,7 +110,7 @@ export function Table({ className, ...props }: React.TableHTMLAttributes<HTMLTab
 export function Th({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   return (
     <th
-      className={cn('border-b border-slate-800 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500', className)}
+      className={cn('border-b border-slate-800 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400', className)}
       {...props}
     />
   );
@@ -115,7 +125,7 @@ export function EmptyState({ title, description, action }: { title: string; desc
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-800 px-6 py-12 text-center">
       <p className="text-sm font-medium text-slate-300">{title}</p>
-      <p className="max-w-md text-xs leading-relaxed text-slate-500">{description}</p>
+      <p className="max-w-md text-xs leading-relaxed text-slate-400">{description}</p>
       {action}
     </div>
   );

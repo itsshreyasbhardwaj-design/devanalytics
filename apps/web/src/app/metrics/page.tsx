@@ -51,7 +51,7 @@ export default function MetricsPage() {
                 <Field label="Scopes"><span className="text-slate-300">{def.supportedScopes.join(', ')}</span></Field>
                 <Field label="Filters"><span className="text-slate-300">{def.appliedFilters.join(', ')}</span></Field>
                 <div>
-                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Caveats</p>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Caveats</p>
                   <ul className="list-disc space-y-1 pl-4 text-slate-400">
                     {def.caveats.map((c) => <li key={c}>{c}</li>)}
                   </ul>
@@ -68,7 +68,7 @@ export default function MetricsPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</p>
+      <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
       {children}
     </div>
   );

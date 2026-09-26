@@ -65,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Nav />
             </Suspense>
 
-            <div className="mt-auto px-2.5 text-[11px] leading-relaxed text-slate-600">
+            <div className="mt-auto px-2.5 text-[11px] leading-relaxed text-slate-400">
               <p>Metrics are computed from ingested events. Periods below a metric’s minimum sample size report “Insufficient data”.</p>
             </div>
           </aside>

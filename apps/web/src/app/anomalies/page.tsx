@@ -71,7 +71,7 @@ export default async function AnomaliesPage({ searchParams }: { searchParams: Pr
                     <tr key={String(a.id)} id={String(a.id)} className="hover:bg-slate-900/50">
                       <Td><Link href={`/metrics/${metric}`} className="hover:text-sky-400">{def.name}</Link></Td>
                       <Td className="max-w-48 truncate text-slate-400">{String(a.scope_label)}</Td>
-                      <Td className="font-mono text-[11px] text-slate-500">
+                      <Td className="font-mono text-[11px] text-slate-400">
                         {new Date(String(a.window_start)).toISOString().slice(0, 10)}
                       </Td>
                       <Td className={`text-right tabular-nums ${worse ? 'text-rose-400' : 'text-emerald-400'}`}>{formatValue(metric, observed)}</Td>
@@ -79,7 +79,7 @@ export default async function AnomaliesPage({ searchParams }: { searchParams: Pr
                       <Td className="text-right tabular-nums">{Number(a.score).toFixed(1)}</Td>
                       <Td><Badge tone={a.severity === 'high' ? 'bad' : a.severity === 'medium' ? 'warn' : 'neutral'}>{String(a.severity)}</Badge></Td>
                       <Td><Badge tone={a.confidence === 'high' ? 'info' : 'muted'}>{String(a.confidence)}</Badge></Td>
-                      <Td className="text-right tabular-nums text-slate-500">
+                      <Td className="text-right tabular-nums text-slate-400">
                         {String(a.sample_size)}
                         <span className="text-slate-700"> / {String(a.baseline_sample_size)}</span>
                       </Td>

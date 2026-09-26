@@ -183,8 +183,12 @@ test.describe('dashboard', () => {
       await question.fill('Which engineer is the most productive?');
       await expect(question).toHaveValue('Which engineer is the most productive?');
     }).toPass({ timeout: 30_000 });
-    await page.getByRole('button', { name: 'Ask', exact: true }).click();
-    await expect(page.getByText(/Unable to answer/)).toBeVisible({ timeout: 60_000 });
+    const [response] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/v1/ai/query'), { timeout: 60_000 }),
+      page.getByRole('button', { name: 'Ask', exact: true }).click(),
+    ]);
+    expect(response.status(), await response.text()).toBe(200);
+    await expect(page.getByText(/Unable to answer/)).toBeVisible({ timeout: 30_000 });
   });
 });
 

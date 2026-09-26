@@ -70,7 +70,7 @@ export default async function DeploymentsPage({ searchParams }: { searchParams: 
         <CardHeader><CardTitle>Recent deployments</CardTitle></CardHeader>
         <CardContent className="p-0">
           {(deployments as unknown[]).length === 0 ? (
-            <p className="px-5 py-8 text-center text-xs text-slate-500">No deployments in this window.</p>
+            <p className="px-5 py-8 text-center text-xs text-slate-400">No deployments in this window.</p>
           ) : (
             <Table>
               <thead>
@@ -85,8 +85,8 @@ export default async function DeploymentsPage({ searchParams }: { searchParams: 
                       {d.is_production === true && <Badge tone="info" className="ml-1.5">production</Badge>}
                     </Td>
                     <Td><Badge tone={d.state === 'success' ? 'good' : d.state === 'failure' || d.state === 'error' ? 'bad' : 'muted'}>{String(d.state)}</Badge></Td>
-                    <Td className="font-mono text-[11px] text-slate-500">{String(d.sha).slice(0, 10)}</Td>
-                    <Td className="text-right font-mono text-[11px] text-slate-500">{new Date(String(d.created_at)).toISOString().slice(0, 16).replace('T', ' ')}</Td>
+                    <Td className="font-mono text-[11px] text-slate-400">{String(d.sha).slice(0, 10)}</Td>
+                    <Td className="text-right font-mono text-[11px] text-slate-400">{new Date(String(d.created_at)).toISOString().slice(0, 16).replace('T', ' ')}</Td>
                   </tr>
                 ))}
               </tbody>

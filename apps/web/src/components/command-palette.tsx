@@ -121,7 +121,7 @@ export function CommandPalette({ items }: { items: PaletteItem[] }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 border-b border-slate-800 px-4">
-          <SearchIcon className="h-4 w-4 text-slate-500" aria-hidden />
+          <SearchIcon className="h-4 w-4 text-slate-400" aria-hidden />
           <input
             ref={inputRef}
             value={query}
@@ -133,13 +133,13 @@ export function CommandPalette({ items }: { items: PaletteItem[] }) {
             }}
             placeholder="Search repositories, metrics, pull requests…"
             aria-label="Search"
-            className="h-12 w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+            className="h-12 w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none"
           />
         </div>
 
         <ul role="listbox" aria-label="Results" className="max-h-80 overflow-y-auto py-1">
           {results.length === 0 && (
-            <li className="px-4 py-6 text-center text-xs text-slate-500">
+            <li className="px-4 py-6 text-center text-xs text-slate-400">
               Nothing matches “{query}”. Try a repository name, a metric, or a pull request number.
             </li>
           )}
@@ -156,16 +156,16 @@ export function CommandPalette({ items }: { items: PaletteItem[] }) {
                     i === active ? 'bg-slate-800 text-slate-100' : 'text-slate-300',
                   )}
                 >
-                  <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
+                  <Icon className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
                   <span className="truncate">{item.label}</span>
-                  {item.hint && <span className="ml-auto truncate text-[11px] text-slate-500">{item.hint}</span>}
+                  {item.hint && <span className="ml-auto truncate text-[11px] text-slate-400">{item.hint}</span>}
                 </button>
               </li>
             );
           })}
         </ul>
 
-        <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-2 text-[11px] text-slate-500">
+        <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-2 text-[11px] text-slate-400">
           <span>↑↓ navigate</span><span>↵ open</span><span>esc close</span>
         </div>
       </div>

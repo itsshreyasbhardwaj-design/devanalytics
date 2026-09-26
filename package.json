@@ -23,7 +23,8 @@
     "worker": "tsx apps/worker/src/main.ts",
     "mcp": "tsx packages/mcp/src/stdio.ts",
     "db:gen": "tsx scripts/gen-migrations.ts",
-    "docs:metrics": "tsx scripts/gen-metrics-doc.ts"
+    "docs:metrics": "tsx scripts/gen-metrics-doc.ts",
+    "a11y": "node scripts/a11y-audit.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

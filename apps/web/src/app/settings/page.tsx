@@ -80,7 +80,7 @@ export default async function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Webhook endpoints</CardTitle>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               Each endpoint has an unguessable id in its URL and a secret stored encrypted. The secret is shown once, at creation.
             </p>
           </CardHeader>
@@ -98,7 +98,7 @@ export default async function SettingsPage() {
                     <tr key={e.id}>
                       <Td className="font-mono text-[11px]">{e.id.slice(0, 12)}…</Td>
                       <Td>{e.provider}</Td>
-                      <Td className="font-mono text-[11px] text-slate-500">{e.last_seen_at ? new Date(e.last_seen_at).toISOString().slice(0, 16).replace('T', ' ') : 'never'}</Td>
+                      <Td className="font-mono text-[11px] text-slate-400">{e.last_seen_at ? new Date(e.last_seen_at).toISOString().slice(0, 16).replace('T', ' ') : 'never'}</Td>
                       <Td><Badge tone={e.revoked_at ? 'muted' : 'good'}>{e.revoked_at ? 'revoked' : 'active'}</Badge></Td>
                     </tr>
                   ))}
@@ -111,7 +111,7 @@ export default async function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>API tokens</CardTitle>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               Only a SHA-256 of each token is stored. Use a <code>viewer</code> token for the MCP server so the credential itself cannot write.
             </p>
           </CardHeader>
@@ -125,9 +125,9 @@ export default async function SettingsPage() {
                   {tokens.map((t) => (
                     <tr key={t.id}>
                       <Td>{t.name}</Td>
-                      <Td className="font-mono text-[11px] text-slate-500">dva_{t.token_prefix}_…</Td>
+                      <Td className="font-mono text-[11px] text-slate-400">dva_{t.token_prefix}_…</Td>
                       <Td><Badge tone={t.role === 'viewer' ? 'muted' : 'info'}>{t.role}</Badge></Td>
-                      <Td className="font-mono text-[11px] text-slate-500">{t.last_used_at ? new Date(t.last_used_at).toISOString().slice(0, 16).replace('T', ' ') : 'never'}</Td>
+                      <Td className="font-mono text-[11px] text-slate-400">{t.last_used_at ? new Date(t.last_used_at).toISOString().slice(0, 16).replace('T', ' ') : 'never'}</Td>
                       <Td><Badge tone={t.revoked_at ? 'muted' : 'good'}>{t.revoked_at ? 'revoked' : 'active'}</Badge></Td>
                     </tr>
                   ))}
@@ -140,7 +140,7 @@ export default async function SettingsPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Providers</CardTitle>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               GitHub is implemented. The others have their event mappings written down and adapters stubbed; adding one touches
               nothing outside its adapter.
             </p>
@@ -162,7 +162,7 @@ export default async function SettingsPage() {
                   <Badge tone="muted">planned</Badge>
                 </div>
                 <p className="mt-1 text-[11px] leading-relaxed text-slate-400">{p.signature}</p>
-                <p className="mt-1.5 text-[11px] text-slate-500">
+                <p className="mt-1.5 text-[11px] text-slate-400">
                   {Object.keys(p.events).length} native events mapped. {p.notes[0]}
                 </p>
               </div>
@@ -171,7 +171,7 @@ export default async function SettingsPage() {
         </Card>
       </div>
 
-      <p className="mt-6 text-xs text-slate-500">
+      <p className="mt-6 text-xs text-slate-400">
         API reference: <Link href="/api/v1/openapi.json" className="text-sky-400 hover:underline">OpenAPI document</Link> ·
         Metric contracts: <Link href="/metrics" className="text-sky-400 hover:underline">metric catalogue</Link>
       </p>
@@ -182,7 +182,7 @@ export default async function SettingsPage() {
 function Row({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'warn' }) {
   return (
     <div className="flex items-center justify-between gap-3 border-b border-slate-900 pb-1.5 last:border-0">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-slate-400">{label}</span>
       {tone ? <Badge tone={tone}>{value}</Badge> : <span className="truncate text-right text-slate-300">{value}</span>}
     </div>
   );
