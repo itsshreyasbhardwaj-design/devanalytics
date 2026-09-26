@@ -7,7 +7,7 @@ import type {
   Team,
   User,
 } from '@devanalytics/core';
-import type { ScopedSql } from './client.js';
+import type { Database, ScopedSql } from './client.js';
 
 /**
  * Typed data access.
@@ -465,10 +465,7 @@ export async function scopeLabel(sql: ScopedSql, scopeType: ScopeType, scopeId: 
  * no org to scope to yet — so it runs unscoped, as the owner role, and is the
  * only such write in the codebase. Everything after this point is scoped.
  */
-export async function provisionOrganization(
-  db: { unscoped: <T>(fn: (sql: { query: (t: string, p?: unknown[]) => Promise<{ rows: unknown[] }> }) => Promise<T>) => Promise<T> },
-  input: UpsertOrgInput,
-): Promise<Organization> {
+export async function provisionOrganization(db: Database, input: UpsertOrgInput): Promise<Organization> {
   const id = stableId('org', input.slug);
   const rows = await db.unscoped(async (sql) => {
     const res = await sql.query(
@@ -477,7 +474,7 @@ export async function provisionOrganization(
        returning id, slug, name, is_demo, created_at`,
       [id, input.slug, input.name, input.isDemo ?? false],
     );
-    return res.rows as { id: string; slug: string; name: string; is_demo: boolean; created_at: Date }[];
+    return res.rows as unknown as { id: string; slug: string; name: string; is_demo: boolean; created_at: Date }[];
   });
   const row = rows[0];
   if (!row) throw new Error('organization provisioning returned no row');

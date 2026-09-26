@@ -65,6 +65,8 @@ export class Database {
       if (role !== 'owner') {
         await tx.query(`set local role ${ROLE_NAME[role]}`);
       }
+      // Deterministic bucketing: date_trunc() follows the session time zone.
+      await tx.query(`set local time zone 'UTC'`);
       await tx.query(`select set_config('devanalytics.org_id', $1, true)`, [orgId]);
       return fn(new ScopedSql(tx, orgId, role));
     });
