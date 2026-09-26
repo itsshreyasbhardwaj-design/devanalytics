@@ -85,7 +85,11 @@ export class EvidenceCollector {
       scope: scopeLabel,
       window: plan.window,
       statement: `${def.name} for ${scopeLabel} is ${formatMetric(plan.metric, current.result)} over ${plan.window.from.slice(0, 10)} to ${plan.window.to.slice(0, 10)}, from ${current.result.sampleSize} observations.`,
-      values: current.result.status === 'ok' ? [current.result.value, current.result.sampleSize] : [current.result.sampleSize],
+      // The sample minimum is quoted whenever a value is withheld, so it has to
+      // be citable too.
+      values: current.result.status === 'ok'
+        ? [current.result.value, current.result.sampleSize, def.minimumSampleSize]
+        : [current.result.sampleSize, current.result.minimumSampleSize],
       sampleSize: current.result.sampleSize,
       href: `/metrics/${plan.metric}?scopeType=${plan.scopeType}&scopeId=${scopeId}`,
     });

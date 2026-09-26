@@ -5,14 +5,22 @@ import { SqlError } from './driver.js';
 /**
  * PGlite driver.
  *
- * PGlite is single-connection, so `transaction` serialises through a promise
- * chain rather than checking out a pooled connection. That is also why the
- * session-level org setting used by RLS is safe here: there is exactly one
- * session, and the org is set at the start of every scoped unit of work.
+ * PGlite is a single Postgres connection compiled to WebAssembly. That makes
+ * concurrency the driver's problem rather than the pool's: two overlapping
+ * `begin`/`commit` sequences on one connection interleave into nonsense, and
+ * a query issued while another is mid-flight can fault the WASM heap.
+ *
+ * So every operation — standalone queries, multi-statement execs and whole
+ * transactions — is serialised through one mutex. A transaction holds the
+ * mutex for its entire body, which is what makes `withOrg`'s `set local role`
+ * and org setting reliable: nothing else can run between them.
  */
 export class PGliteDriver implements SqlDriver {
   readonly dialect = 'pglite' as const;
-  private chain: Promise<unknown> = Promise.resolve();
+  /** Tail of the work queue. Never rejects, so one failure cannot poison the queue. */
+  private tail: Promise<void> = Promise.resolve();
+  private inTransaction = false;
+  private closed = false;
 
   private constructor(private readonly pg: PGlite) {}
 
@@ -22,7 +30,28 @@ export class PGliteDriver implements SqlDriver {
     return new PGliteDriver(pg);
   }
 
+  /** Run `fn` with exclusive access to the connection. */
+  private serialize<T>(fn: () => Promise<T>): Promise<T> {
+    const result = this.tail.then(fn, fn);
+    this.tail = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  }
+
+  private assertOpen(): void {
+    if (this.closed) throw new SqlError('database is closed', '');
+  }
+
   async query<T = Record<string, unknown>>(text: string, params: SqlParam[] = []): Promise<QueryResult<T>> {
+    // A query issued from inside a transaction body already holds the mutex;
+    // re-acquiring it would deadlock against the transaction that owns it.
+    return this.inTransaction ? this.rawQuery<T>(text, params) : this.serialize(() => this.rawQuery<T>(text, params));
+  }
+
+  private async rawQuery<T>(text: string, params: SqlParam[]): Promise<QueryResult<T>> {
+    this.assertOpen();
     try {
       const res = await this.pg.query<T>(text, params as unknown[]);
       return { rows: res.rows, rowCount: res.rows.length };
@@ -32,31 +61,43 @@ export class PGliteDriver implements SqlDriver {
   }
 
   async exec(sql: string): Promise<void> {
-    try {
-      await this.pg.exec(sql);
-    } catch (err) {
-      throw new SqlError(`exec failed: ${(err as Error).message}`, sql, err);
-    }
+    const run = async () => {
+      this.assertOpen();
+      try {
+        await this.pg.exec(sql);
+      } catch (err) {
+        throw new SqlError(`exec failed: ${(err as Error).message}`, sql, err);
+      }
+    };
+    return this.inTransaction ? run() : this.serialize(run);
   }
 
   async transaction<T>(fn: (tx: SqlDriver) => Promise<T>): Promise<T> {
-    const run = async (): Promise<T> => {
-      await this.pg.exec('begin');
+    return this.serialize(async () => {
+      this.assertOpen();
+      this.inTransaction = true;
       try {
-        const result = await fn(this);
-        await this.pg.exec('commit');
-        return result;
-      } catch (err) {
-        await this.pg.exec('rollback').catch(() => undefined);
-        throw err;
+        await this.pg.exec('begin');
+        try {
+          const result = await fn(this);
+          await this.pg.exec('commit');
+          return result;
+        } catch (err) {
+          await this.pg.exec('rollback').catch(() => undefined);
+          throw err;
+        }
+      } finally {
+        this.inTransaction = false;
       }
-    };
-    const next = this.chain.then(run, run);
-    this.chain = next.catch(() => undefined);
-    return next;
+    });
   }
 
   async close(): Promise<void> {
+    if (this.closed) return;
+    // Drain outstanding work before freeing the WASM heap: closing underneath a
+    // queued query is what produces "memory access out of bounds".
+    await this.tail.catch(() => undefined);
+    this.closed = true;
     await this.pg.close();
   }
 }
