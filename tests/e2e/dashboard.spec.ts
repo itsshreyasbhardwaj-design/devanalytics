@@ -83,19 +83,21 @@ test.describe('dashboard', () => {
 
   test('shows GitLab merge requests alongside GitHub pull requests', async ({ page }) => {
     await page.goto('/pull-requests?period=30d');
-    // Both providers appear in one list, under one set of metrics.
-    await expect(page.getByText(/northwind-robotics\/ledger/).first()).toBeVisible();
-    await expect(page.getByText(/northwind\/(checkout|catalog|identity|infra)/).first()).toBeVisible();
+    // Scoped to the table: the repository filter is a <select> whose options
+    // carry the same names but are not visible.
+    const rows = page.locator('tbody');
+    await expect(rows.getByText(/northwind-robotics\/ledger/).first()).toBeVisible();
+    await expect(rows.getByText(/northwind\/(checkout|catalog|identity|infra)/).first()).toBeVisible();
   });
 
   test('says "not reported" for sizes GitLab does not send, never zero', async ({ page }) => {
     await page.goto('/pull-requests?period=30d');
-    const notReported = page.getByText('not reported').first();
-    await expect(notReported).toBeVisible();
+    await expect(page.locator('tbody').getByText('not reported').first()).toBeVisible();
 
-    // The row must not be showing a zero instead.
-    const row = page.locator('tr', { has: page.getByText(/northwind-robotics\/ledger/) }).first();
+    // The GitLab row must not be showing a zero size instead.
+    const row = page.locator('tbody tr', { hasText: 'northwind-robotics/ledger' }).first();
     await expect(row).toBeVisible();
+    await expect(row.getByText('not reported')).toBeVisible();
     await expect(row.getByText(/^0$/)).toHaveCount(0);
   });
 
