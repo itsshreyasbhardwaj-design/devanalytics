@@ -1,0 +1,38 @@
+{
+  "name": "devanalytics",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "typecheck": "tsc -b tsconfig.json --pretty false",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:security": "vitest run --project security",
+    "test:e2e": "playwright test",
+    "bench": "tsx scripts/benchmark.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "demo:seed": "tsx scripts/seed-demo.ts",
+    "dev": "pnpm --filter @devanalytics/web dev",
+    "build": "pnpm --filter @devanalytics/web build",
+    "worker": "tsx apps/worker/src/main.ts",
+    "mcp": "tsx packages/mcp/src/stdio.ts",
+    "db:gen": "tsx scripts/gen-migrations.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "typescript-eslint": "^8.19.0",
+    "@eslint/js": "^9.17.0",
+    "globals": "^15.14.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "@playwright/test": "^1.49.1"
+  }
+}

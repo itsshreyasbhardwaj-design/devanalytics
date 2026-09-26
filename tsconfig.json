@@ -1,0 +1,68 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "preserve",
+    "allowJs": true,
+    "paths": {
+      "@devanalytics/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@devanalytics/db": [
+        "./packages/db/src/index.ts"
+      ],
+      "@devanalytics/event-ingestion": [
+        "./packages/event-ingestion/src/index.ts"
+      ],
+      "@devanalytics/metrics": [
+        "./packages/metrics/src/index.ts"
+      ],
+      "@devanalytics/anomaly-detection": [
+        "./packages/anomaly-detection/src/index.ts"
+      ],
+      "@devanalytics/investigations": [
+        "./packages/investigations/src/index.ts"
+      ],
+      "@devanalytics/github": [
+        "./packages/github/src/index.ts"
+      ],
+      "@devanalytics/ai": [
+        "./packages/ai/src/index.ts"
+      ],
+      "@devanalytics/sdk": [
+        "./packages/sdk/src/index.ts"
+      ],
+      "@devanalytics/mcp": [
+        "./packages/mcp/src/index.ts"
+      ],
+      "@devanalytics/ui": [
+        "./packages/ui/src/index.ts"
+      ],
+      "@devanalytics/demo-data": [
+        "./packages/demo-data/src/index.ts"
+      ],
+      "@/*": [
+        "./apps/web/src/*"
+      ],
+      "@devanalytics/api": [
+        "./packages/api/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx",
+    "apps/*/src/**/*.ts",
+    "apps/*/src/**/*.tsx",
+    "tests/**/*.ts",
+    "scripts/**/*.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "vitest.workspace.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/dist",
+    "**/.next"
+  ]
+}
