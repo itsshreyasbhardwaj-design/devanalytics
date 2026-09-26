@@ -142,6 +142,21 @@ export class EvidenceCollector {
         value: p.result.status === 'ok' ? p.result.value : null,
         sampleSize: p.result.sampleSize,
       }));
+
+      // Coverage is itself a fact worth stating and therefore worth citing:
+      // "reported in 20 of 28 periods" is how a reader judges a trend line.
+      const reported = series.filter((p) => p.value !== null).length;
+      citations.push({
+        id: `coverage:${plan.metric}`,
+        kind: 'metric',
+        metric: plan.metric,
+        scope: scopeLabel,
+        window: plan.window,
+        statement: `${def.name} could be reported in ${reported} of ${series.length} periods in this window; the rest had too few observations.`,
+        values: [reported, series.length, series.length - reported],
+        sampleSize: reported,
+        href: null,
+      });
     }
 
     if (plan.intent === 'investigate' || plan.intent === 'contributors') {
@@ -160,11 +175,16 @@ export class EvidenceCollector {
           scope: c.label,
           window: plan.window,
           statement: c.statement,
+          // Everything the statement quotes has to be citable, including the
+          // volume-share percentages it uses to explain a mix effect.
           values: [
             Number((c.contributionShare * 100).toFixed(1)),
             ...(c.currentValue === null ? [] : [Number(c.currentValue.toFixed(2))]),
             ...(c.baselineValue === null ? [] : [Number(c.baselineValue.toFixed(2))]),
+            Number((c.currentWeight * 100).toFixed(0)),
+            Number((c.baselineWeight * 100).toFixed(0)),
             c.sampleSize,
+            c.baselineSampleSize,
           ],
           sampleSize: c.sampleSize,
           href: dimension === 'repository' ? `/repositories/${c.key}` : null,

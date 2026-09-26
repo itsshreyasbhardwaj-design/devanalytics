@@ -46,6 +46,9 @@
       ],
       "@devanalytics/api": [
         "./packages/api/src/index.ts"
+      ],
+      "@devanalytics/runtime": [
+        "./packages/runtime/src/index.ts"
       ]
     }
   },

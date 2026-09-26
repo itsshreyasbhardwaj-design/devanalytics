@@ -7,6 +7,40 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@devanalytics/ai':
+        specifier: workspace:*
+        version: link:packages/ai
+      '@devanalytics/api':
+        specifier: workspace:*
+        version: link:packages/api
+      '@devanalytics/core':
+        specifier: workspace:*
+        version: link:packages/core
+      '@devanalytics/db':
+        specifier: workspace:*
+        version: link:packages/db
+      '@devanalytics/demo-data':
+        specifier: workspace:*
+        version: link:packages/demo-data
+      '@devanalytics/event-ingestion':
+        specifier: workspace:*
+        version: link:packages/event-ingestion
+      '@devanalytics/github':
+        specifier: workspace:*
+        version: link:packages/github
+      '@devanalytics/investigations':
+        specifier: workspace:*
+        version: link:packages/investigations
+      '@devanalytics/metrics':
+        specifier: workspace:*
+        version: link:packages/metrics
+      '@devanalytics/runtime':
+        specifier: workspace:*
+        version: link:packages/runtime
+      '@devanalytics/sdk':
+        specifier: workspace:*
+        version: link:packages/sdk
     devDependencies:
       '@eslint/js':
         specifier: ^9.17.0
@@ -44,6 +78,15 @@ importers:
       '@devanalytics/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@devanalytics/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@electric-sql/pglite':
+        specifier: ^0.2.15
+        version: 0.2.17
+      pg:
+        specifier: ^8.13.1
+        version: 8.23.0
 
   apps/web:
     dependencies:
@@ -77,12 +120,27 @@ importers:
       '@devanalytics/metrics':
         specifier: workspace:*
         version: link:../../packages/metrics
+      '@devanalytics/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
       '@devanalytics/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@electric-sql/pglite':
+        specifier: ^0.2.15
+        version: 0.2.17
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^0.468.0
+        version: 0.468.0(react@19.3.0)
       next:
         specifier: ^15.1.3
         version: 15.5.26(@playwright/test@1.63.0)(@types/node@22.20.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      pg:
+        specifier: ^8.13.1
+        version: 8.23.0
       react:
         specifier: ^19.0.0
         version: 19.3.0
@@ -92,6 +150,12 @@ importers:
       recharts:
         specifier: ^2.15.0
         version: 2.15.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
+      tailwind-merge:
+        specifier: ^2.6.0
+        version: 2.6.1
       zod:
         specifier: ^3.24.1
         version: 3.25.76
@@ -129,6 +193,15 @@ importers:
       '@devanalytics/metrics':
         specifier: workspace:*
         version: link:../../packages/metrics
+      '@devanalytics/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@electric-sql/pglite':
+        specifier: ^0.2.15
+        version: 0.2.17
+      pg:
+        specifier: ^8.13.1
+        version: 8.23.0
 
   packages/ai:
     dependencies:
@@ -271,6 +344,33 @@ importers:
         specifier: workspace:*
         version: link:../db
 
+  packages/runtime:
+    dependencies:
+      '@devanalytics/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@devanalytics/api':
+        specifier: workspace:*
+        version: link:../api
+      '@devanalytics/core':
+        specifier: workspace:*
+        version: link:../core
+      '@devanalytics/db':
+        specifier: workspace:*
+        version: link:../db
+      '@devanalytics/event-ingestion':
+        specifier: workspace:*
+        version: link:../event-ingestion
+      '@devanalytics/github':
+        specifier: workspace:*
+        version: link:../github
+      '@devanalytics/investigations':
+        specifier: workspace:*
+        version: link:../investigations
+      '@devanalytics/metrics':
+        specifier: workspace:*
+        version: link:../metrics
+
   packages/sdk:
     dependencies:
       '@devanalytics/core':
@@ -309,6 +409,19 @@ importers:
       tailwind-merge:
         specifier: ^2.6.0
         version: 2.6.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.2
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.0.2
+        version: 19.3.0(@types/react@19.3.0)
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.0(react@19.3.0)
 
 packages:
 
@@ -2656,6 +2769,9 @@ packages:
   serve-static@2.2.1:
     resolution: {integrity: sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==}
     engines: {node: '>= 18'}
+
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
 
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
@@ -5090,6 +5206,8 @@ snapshots:
       send: 1.2.1(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
+
+  server-only@0.0.1: {}
 
   setprototypeof@1.2.0: {}
 

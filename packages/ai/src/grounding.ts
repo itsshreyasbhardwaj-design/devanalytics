@@ -59,11 +59,33 @@ export interface GroundingResult {
 
 export function verifyGrounding(text: string, bundle: EvidenceBundle, tolerance = 0.02): GroundingResult {
   const supported: number[] = bundle.citations.flatMap((c) => c.values).filter((v) => Number.isFinite(v));
-  // Sample sizes and window bounds are legitimate to quote.
-  for (const c of bundle.citations) supported.push(c.sampleSize);
+
+  for (const c of bundle.citations) {
+    // Sample sizes are always legitimate to quote.
+    supported.push(c.sampleSize);
+    // A citation's statement *is* the evidence, so every figure it contains is
+    // supported by definition. Deriving the set from the statements as well as
+    // from `values` means a citation that renders a ratio as a percentage, or
+    // quotes a weight, does not have to remember to duplicate that number into
+    // `values`. What remains unsupported is precisely what a narration made up.
+    for (const match of maskIdentifiers(c.statement).match(NUMBER_RE) ?? []) {
+      const n = Number(match.replace(',', '.'));
+      if (Number.isFinite(n)) supported.push(n);
+    }
+  }
   for (const p of bundle.series) {
     if (p.value !== null) supported.push(p.value);
     supported.push(p.sampleSize);
+  }
+
+  // Caveats are quoted verbatim from the metric registry. "a flaky job that
+  // passes on attempt 3" is definitional prose, not a measurement of this
+  // dataset, and an answer repeating it has invented nothing.
+  for (const note of bundle.notes) {
+    for (const match of maskIdentifiers(note).match(NUMBER_RE) ?? []) {
+      const n = Number(match.replace(',', '.'));
+      if (Number.isFinite(n)) supported.push(n);
+    }
   }
 
   const unsupported: number[] = [];

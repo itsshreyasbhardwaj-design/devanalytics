@@ -137,3 +137,39 @@ describe('SQL guard: execution', () => {
     ).rejects.toThrow(/permission denied/i);
   });
 });
+
+describe('read-only role reach', () => {
+  let db: Database;
+  let orgId: string;
+
+  beforeAll(async () => {
+    db = await testDatabase();
+    const fixture = await loadFixture(db);
+    orgId = fixture.orgId;
+  }, 180_000);
+
+  afterAll(async () => {
+    await db.close();
+  });
+
+  const denied = ['webhook_endpoints', 'api_tokens', 'org_members', 'webhook_deliveries', 'job_queue', 'principals'];
+  for (const table of denied) {
+    it(`denies the read-only role access to ${table}`, async () => {
+      await expect(
+        db.withOrg(orgId, (sql) => sql.many(`select * from ${table} limit 1`), 'readonly'),
+      ).rejects.toThrow(/permission denied/i);
+    });
+  }
+
+  const allowed = ['pull_requests', 'reviews', 'workflow_runs', 'deployments', 'metric_snapshots', 'anomalies'];
+  for (const table of allowed) {
+    it(`allows the read-only role to read ${table}`, async () => {
+      await expect(db.withOrg(orgId, (sql) => sql.many(`select * from ${table} limit 1`), 'readonly')).resolves.toBeDefined();
+    });
+  }
+
+  it('lets the application role reach credential tables it owns', async () => {
+    await expect(db.withOrg(orgId, (sql) => sql.many(`select id from api_tokens limit 1`))).resolves.toBeDefined();
+    await expect(db.withOrg(orgId, (sql) => sql.many(`select id from webhook_endpoints limit 1`))).resolves.toBeDefined();
+  });
+});

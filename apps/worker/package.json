@@ -3,12 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "start": "tsx src/main.ts" },
+  "scripts": {
+    "start": "tsx src/main.ts"
+  },
   "dependencies": {
     "@devanalytics/core": "workspace:*",
     "@devanalytics/db": "workspace:*",
     "@devanalytics/event-ingestion": "workspace:*",
     "@devanalytics/metrics": "workspace:*",
-    "@devanalytics/anomaly-detection": "workspace:*"
+    "@devanalytics/anomaly-detection": "workspace:*",
+    "@devanalytics/runtime": "workspace:*",
+    "@electric-sql/pglite": "^0.2.15",
+    "pg": "^8.13.1"
   }
 }

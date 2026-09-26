@@ -17,6 +17,7 @@ export const alias: Record<string, string> = {
   '@devanalytics/ai': pkg('ai'),
   '@devanalytics/sdk': pkg('sdk'),
   '@devanalytics/mcp': pkg('mcp'),
+  '@devanalytics/runtime': pkg('runtime'),
   '@devanalytics/demo-data': pkg('demo-data'),
 };
 

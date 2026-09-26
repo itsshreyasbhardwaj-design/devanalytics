@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950 text-slate-200 antialiased;
+}
+
+/* Focus visibility is a hard requirement, not a theme choice. */
+*:focus-visible {
+  @apply outline-none ring-2 ring-sky-500 ring-offset-2 ring-offset-slate-950;
+}
+
+::selection {
+  @apply bg-sky-500/30;
+}
+
+/* Respect users who have asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

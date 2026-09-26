@@ -34,6 +34,26 @@ describe('AI investigation grounded in real evidence', () => {
 
   const asOf = () => new Date(new Date('2026-09-01T00:00:00Z').getTime() - 4 * MS_PER_DAY);
 
+  it('grounds every deterministic answer it produces', async () => {
+    const ai = new AiService(db, engine);
+    const questions = [
+      'Why did PR cycle time increase over the last 30 days?',
+      'Which repositories contributed most to the cycle time increase?',
+      'Which teams contributed most to the cycle time increase?',
+      'What changed in CI reliability over the last 90 days?',
+      'What is our deployment frequency this quarter?',
+      'Show me the trend in build duration over the last 90 days',
+      'What patterns do you see in our failed builds?',
+      'What is our time to first review?',
+      'Why did review turnaround time change?',
+      'What is our lead time for changes?',
+    ];
+    for (const question of questions) {
+      const answer = await ai.ask(demo.orgId, question, asOf());
+      expect(answer.grounding.grounded, `"${question}" produced unsupported figures: ${answer.grounding.unsupported.join(', ')}`).toBe(true);
+    }
+  }, 180_000);
+
   it('answers a why-question with citations, without any model configured', async () => {
     const ai = new AiService(db, engine);
     const answer = await ai.ask(demo.orgId, 'Why did PR cycle time increase over the last 30 days?', asOf());

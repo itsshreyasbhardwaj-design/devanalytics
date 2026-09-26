@@ -1,0 +1,63 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": [
+        "./apps/web/src/*"
+      ],
+      "@devanalytics/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@devanalytics/db": [
+        "./packages/db/src/index.ts"
+      ],
+      "@devanalytics/metrics": [
+        "./packages/metrics/src/index.ts"
+      ],
+      "@devanalytics/anomaly-detection": [
+        "./packages/anomaly-detection/src/index.ts"
+      ],
+      "@devanalytics/investigations": [
+        "./packages/investigations/src/index.ts"
+      ],
+      "@devanalytics/event-ingestion": [
+        "./packages/event-ingestion/src/index.ts"
+      ],
+      "@devanalytics/github": [
+        "./packages/github/src/index.ts"
+      ],
+      "@devanalytics/ai": [
+        "./packages/ai/src/index.ts"
+      ],
+      "@devanalytics/api": [
+        "./packages/api/src/index.ts"
+      ],
+      "@devanalytics/ui": [
+        "./packages/ui/src/index.ts"
+      ],
+      "@devanalytics/demo-data": [
+        "./packages/demo-data/src/index.ts"
+      ],
+      "@devanalytics/runtime": [
+        "./packages/runtime/src/index.ts"
+      ]
+    },
+    "incremental": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

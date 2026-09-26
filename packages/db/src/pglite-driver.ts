@@ -1,4 +1,4 @@
-import { PGlite } from '@electric-sql/pglite';
+import type { PGlite } from '@electric-sql/pglite';
 import type { SqlDriver, QueryResult, SqlParam } from './driver.js';
 import { SqlError } from './driver.js';
 
@@ -24,8 +24,20 @@ export class PGliteDriver implements SqlDriver {
 
   private constructor(private readonly pg: PGlite) {}
 
+  /**
+   * Loaded at call time rather than imported at module scope.
+   *
+   * PGlite ships a WebAssembly build that locates its own artefacts through
+   * `new URL(..., import.meta.url)`. A bundler that inlines the package
+   * rewrites those URLs and the runtime then hands Node's fs a value it
+   * rejects. Resolving the specifier at runtime keeps the package external
+   * under every bundler, and means deployments that only use managed Postgres
+   * never load it at all.
+   */
   static async create(dataDir?: string): Promise<PGliteDriver> {
-    const pg = dataDir ? new PGlite(dataDir) : new PGlite();
+    const specifier = ['@electric-sql', 'pglite'].join('/');
+    const mod = (await import(/* webpackIgnore: true */ specifier)) as { PGlite: new (dir?: string) => PGlite };
+    const pg = dataDir ? new mod.PGlite(dataDir) : new mod.PGlite();
     await pg.waitReady;
     return new PGliteDriver(pg);
   }
