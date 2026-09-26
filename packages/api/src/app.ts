@@ -1,6 +1,6 @@
 import {
   METRIC_IDS,
-  MetricEngine,
+  type MetricEngine,
   METRIC_DEFINITIONS,
   requireMetricDefinition,
   refreshSnapshots,
@@ -12,13 +12,12 @@ import {
   assertCan,
   assertOrgAccess,
   previousWindow,
-  type Principal,
 } from '@devanalytics/core';
 import { appendAudit, getPullRequest, listPullRequests, scopeLabel, type Database } from '@devanalytics/db';
-import { Investigator, runDetection, persistDetections } from '@devanalytics/investigations';
-import { AiService, runGuardedQuery } from '@devanalytics/ai';
+import { type Investigator, runDetection, persistDetections } from '@devanalytics/investigations';
+import { type AiService, runGuardedQuery } from '@devanalytics/ai';
 import type { IngestionService } from '@devanalytics/event-ingestion';
-import { AuthChain } from './auth.js';
+import { type AuthChain } from './auth.js';
 import { RateLimiter } from './rate-limit.js';
 import { parseQuery, parseWindow } from './params.js';
 import { Router, errorResponse, json, requireParam, type RouteContext } from './router.js';

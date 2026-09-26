@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest a capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can you not currently find out? Describe the situation, not the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - A new metric
+        - A new provider (GitLab, CircleCI, Jenkins, other)
+        - Analysis or investigation capability
+        - Dashboard
+        - API / SDK / MCP
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: metric-contract
+    attributes:
+      label: Metric contract (for a new metric)
+      description: >
+        Formula, source tables, time anchor, minimum sample size, and the caveats a reader would need before acting on
+        it. A metric without honest caveats is not ready to add.
+      render: text
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: This can be computed from ingested data, or reports `insufficient_data` when it cannot
+          required: true
+        - label: This does not rank individual developers against each other
+          required: true

@@ -10,3 +10,6 @@ coverage/
 playwright-report/
 test-results/
 bench-results/
+.e2e-pgdata/
+tests/e2e/.state/
+bench-results/

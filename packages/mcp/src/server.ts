@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DevAnalytics, type Dimension, type Granularity, type Period, type ScopeType } from '@devanalytics/sdk';
+import { type DevAnalytics, type Dimension, type Granularity, type Period, type ScopeType } from '@devanalytics/sdk';
 
 /**
  * MCP server.

@@ -14,7 +14,7 @@
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
     "test:security": "vitest run --project security",
-    "test:e2e": "playwright test",
+    "test:e2e": "tsx scripts/seed-e2e.ts && playwright test",
     "bench": "tsx scripts/benchmark.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "demo:seed": "tsx scripts/seed-demo.ts",
@@ -22,7 +22,8 @@
     "build": "pnpm --filter @devanalytics/web build",
     "worker": "tsx apps/worker/src/main.ts",
     "mcp": "tsx packages/mcp/src/stdio.ts",
-    "db:gen": "tsx scripts/gen-migrations.ts"
+    "db:gen": "tsx scripts/gen-migrations.ts",
+    "docs:metrics": "tsx scripts/gen-metrics-doc.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

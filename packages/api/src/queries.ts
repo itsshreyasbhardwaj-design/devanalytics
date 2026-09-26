@@ -1,7 +1,7 @@
 import type { ScopeType, TimeWindow } from '@devanalytics/core';
 import { NotFoundError } from '@devanalytics/core';
 import { getPullRequest, listRepositories, type Database } from '@devanalytics/db';
-import { MetricEngine, formatMetric, requireMetricDefinition } from '@devanalytics/metrics';
+import { type MetricEngine, formatMetric, requireMetricDefinition } from '@devanalytics/metrics';
 
 /**
  * Composite reads for the dashboard and the data explorer.

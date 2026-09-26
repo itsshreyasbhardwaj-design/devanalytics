@@ -1,0 +1,74 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If this is a **security** issue, please report it privately instead:
+        https://github.com/itsshreyasbhardwaj-design/devanalytics/security/advisories/new
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, and what did the product do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Metric calculation
+        - Event ingestion / webhooks
+        - Anomaly detection
+        - Investigations / change intelligence
+        - AI / Ask
+        - Dashboard
+        - API / SDK / MCP
+        - Database / migrations
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: metric
+    attributes:
+      label: Metric (if the bug is a wrong number)
+      description: The metric id, e.g. pr_cycle_time
+      placeholder: pr_cycle_time
+
+  - type: textarea
+    id: expected-value
+    attributes:
+      label: Derivation (if the bug is a wrong number)
+      description: >
+        If you believe a metric is wrong, show how the correct value should be derived from the underlying records.
+        This is the single most useful thing you can include.
+      render: text
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Node version, database (embedded or managed Postgres), demo data or real data.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Ideally against a seeded instance (`pnpm demo:seed && pnpm dev`).
+    validations:
+      required: true

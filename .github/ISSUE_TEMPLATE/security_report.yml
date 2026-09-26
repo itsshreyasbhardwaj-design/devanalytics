@@ -1,0 +1,29 @@
+name: Security report (public placeholder)
+description: Do not use this for vulnerabilities — report privately instead
+labels: [security]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Please do not report vulnerabilities here
+
+        Use a private [security advisory](https://github.com/itsshreyasbhardwaj-design/devanalytics/security/advisories/new)
+        so a fix can ship before disclosure. See [SECURITY.md](../../SECURITY.md) for scope and response times.
+
+        This template exists only for **non-sensitive** security questions — hardening guidance, deployment
+        configuration, clarification of the security model.
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirm
+      options:
+        - label: This is not a vulnerability report
+          required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true

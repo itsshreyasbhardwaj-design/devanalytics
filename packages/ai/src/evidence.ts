@@ -1,7 +1,7 @@
 import { compare, previousWindow, type Comparison } from '@devanalytics/core';
 import type { Database } from '@devanalytics/db';
-import { MetricEngine, formatMetric, requireMetricDefinition } from '@devanalytics/metrics';
-import { Investigator, type InvestigationReport } from '@devanalytics/investigations';
+import { type MetricEngine, formatMetric, requireMetricDefinition } from '@devanalytics/metrics';
+import { type Investigator, type InvestigationReport } from '@devanalytics/investigations';
 import type { AnalyticsPlan } from './planner.js';
 
 /**

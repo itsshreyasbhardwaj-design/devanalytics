@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createHmac } from 'node:crypto';
 import { provisionOrganization, type Database } from '@devanalytics/db';
 import { EventWorker, IngestionService, PostgresJobQueue, QUEUES } from '@devanalytics/event-ingestion';

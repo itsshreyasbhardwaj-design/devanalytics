@@ -1,4 +1,4 @@
-import { INSUFFICIENT_DATA_LABEL, type MetricResult } from '@devanalytics/core';
+import { INSUFFICIENT_DATA_LABEL } from '@devanalytics/core';
 import { formatMetric, requireMetricDefinition, type SeriesPoint } from '@devanalytics/metrics';
 import type { InvestigationReport } from '@devanalytics/investigations';
 

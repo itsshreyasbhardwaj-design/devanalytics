@@ -8,7 +8,7 @@
  * and labels. Seeding also computes snapshots and runs anomaly detection, so
  * the dashboard has real precomputed state rather than an empty shell.
  */
-import { Database, provisionOrganization } from '@devanalytics/db';
+import { Database } from '@devanalytics/db';
 import { generateDemoOrganization, loadFixture } from '@devanalytics/demo-data';
 import { MetricEngine, refreshSnapshots } from '@devanalytics/metrics';
 import { persistDetections, runDetection } from '@devanalytics/investigations';

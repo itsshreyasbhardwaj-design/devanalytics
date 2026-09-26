@@ -10,7 +10,7 @@ import {
 import type { Database } from '@devanalytics/db';
 import { scopeLabel } from '@devanalytics/db';
 import {
-  MetricEngine,
+  type MetricEngine,
   formatMetric,
   isAggregatable,
   requireMetricDefinition,

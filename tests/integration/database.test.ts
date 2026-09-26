@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Database, MIGRATIONS, provisionOrganization, upsertRepository } from '@devanalytics/db';
+import { type Database, MIGRATIONS, provisionOrganization, upsertRepository } from '@devanalytics/db';
 import { testDatabase } from '../helpers/db.js';
 
 describe('database migrations and tenant isolation', () => {
