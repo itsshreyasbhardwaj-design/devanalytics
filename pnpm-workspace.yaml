@@ -2,9 +2,8 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# Packages allowed to run install scripts. esbuild (via tsx and vitest) and the
+# embedded Postgres engine both need theirs; nothing else does.
 allowBuilds:
-  esbuild: set this to true or false
-
-onlyBuiltDependencies:
-  - esbuild
-  - "@electric-sql/pglite"
+  esbuild: true
+  "@electric-sql/pglite": true
