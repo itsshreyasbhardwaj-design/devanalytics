@@ -353,19 +353,21 @@ tables each database role may reach.
 ## Benchmarks
 
 Methodology is stated in `scripts/benchmark.ts`: fresh embedded Postgres per run, discarded warmup iterations, p50/p95
-rather than means, no caching layer. On a 180-day dataset (9,421 domain rows), Node 24, darwin/arm64:
+rather than means, no caching layer. On a 180-day dataset (9,540 domain rows), Node 24, darwin/arm64:
 
 | Benchmark | p50 | p95 |
 | --- | ---: | ---: |
-| Webhook accept (verify + persist + enqueue) | 189 ops/s | — |
-| PR cycle time, 30 days | 6.7 ms | 8.3 ms |
-| PR cycle time, 90 days | 11.2 ms | 12.5 ms |
-| Lead time for changes, 90 days (lateral join) | 8.0 ms | 9.4 ms |
-| All 15 metrics, 30 days | 77.5 ms | 84.8 ms |
-| Time series, weekly over 365 days | 12.9 ms | 13.7 ms |
-| Breakdown by repository, 90 days | 7.0 ms | 10.5 ms |
-| Snapshot materialisation | 1,287 buckets/s | — |
-| Full investigation (4 dimensions, 7 related metrics) | 259.7 ms | 381.0 ms |
+| Webhook accept (verify + persist + enqueue) | 332 ops/s | — |
+| Event projection (worker) | 103 ops/s | — |
+| PR cycle time, 30 days | 3.6 ms | 3.7 ms |
+| PR cycle time, 90 days | 6.6 ms | 11.0 ms |
+| Lead time for changes, 90 days (lateral join) | 5.3 ms | 5.4 ms |
+| All 15 metrics, 30 days | 60.9 ms | 62.1 ms |
+| Time series, weekly over 365 days | 11.4 ms | 11.5 ms |
+| Breakdown by repository, 90 days | 6.7 ms | 6.8 ms |
+| Snapshot materialisation | 1,761 buckets/s | — |
+| Anomaly detection (org + 4 repos, every metric) | 521.2 ms | 591.1 ms |
+| Full investigation (4 dimensions, 7 related metrics) | 139.0 ms | 141.0 ms |
 
 Benchmarking found a real defect: under row-level security, Postgres adds an `org_id` predicate to every scan, so an
 index that does not lead with `org_id` leaves the planner combining two indexes and reading the organization's whole
