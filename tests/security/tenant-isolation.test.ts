@@ -353,3 +353,97 @@ describe('GitLab webhook authentication', () => {
     }
   });
 });
+
+describe('CircleCI webhook authentication', () => {
+  let db: Database;
+  let api: TestApi;
+  let orgId: string;
+  const CIRCLE_ENDPOINT = 'endpoint-circleci';
+  const CIRCLE_SECRET = 'circleci-signing-secret-value';
+
+  const payload = {
+    id: 'evt-1',
+    type: 'workflow-completed',
+    happened_at: '2026-03-01T10:07:00.000Z',
+    project: { id: 'p1', name: 'app', slug: 'gh/fixture-co/app' },
+    organization: { id: 'o1', name: 'fixture-co' },
+    workflow: { id: 'wf-1', name: 'build', status: 'success', created_at: '2026-03-01T10:01:00.000Z', stopped_at: '2026-03-01T10:07:00.000Z' },
+    pipeline: {
+      id: 'pl-1', number: 1, created_at: '2026-03-01T10:00:00.000Z', trigger: { type: 'webhook' },
+      vcs: { provider_name: 'github', target_repository_url: 'https://github.com/fixture-co/app', revision: 'abc', branch: 'main' },
+    },
+  };
+  const body = JSON.stringify(payload);
+  const sign = (secret: string, content = body) => `v1=${createHmac('sha256', secret).update(content, 'utf8').digest('hex')}`;
+
+  beforeAll(async () => {
+    db = await testDatabase();
+    const fixture = await loadFixture(db);
+    orgId = fixture.orgId;
+    api = createTestApi(db, [{ endpointId: CIRCLE_ENDPOINT, orgId, secret: CIRCLE_SECRET, provider: 'circleci' }]);
+  }, 180_000);
+
+  afterAll(async () => {
+    await db.close();
+  });
+
+  const post = (headers: Record<string, string>, endpointId = CIRCLE_ENDPOINT, content = body) =>
+    api.handle(new Request(`http://api.test/api/v1/webhooks/circleci/${endpointId}`, { method: 'POST', body: content, headers }));
+
+  const eventCount = () =>
+    db.withOrg(orgId, (sql) => sql.value<number>(`select count(*)::int from events`)).then((n) => Number(n));
+
+  it('rejects an unsigned delivery', async () => {
+    const before = await eventCount();
+    const res = await post({ 'circleci-event-type': 'workflow-completed' });
+    expect(res.status).toBe(401);
+    expect(await eventCount()).toBe(before);
+  });
+
+  it('rejects a wrongly signed delivery', async () => {
+    const res = await post({ 'circleci-event-type': 'workflow-completed', 'circleci-signature': sign('wrong-secret') });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a body altered after signing', async () => {
+    const signature = sign(CIRCLE_SECRET);
+    const tampered = body.replace('"success"', '"failed"');
+    const res = await post({ 'circleci-event-type': 'workflow-completed', 'circleci-signature': signature }, CIRCLE_ENDPOINT, tampered);
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects an unsupported signature version', async () => {
+    const res = await post({ 'circleci-event-type': 'workflow-completed', 'circleci-signature': 'v2=deadbeef' });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a GitLab-style token presented to a CircleCI endpoint', async () => {
+    const res = await post({ 'circleci-event-type': 'workflow-completed', 'x-gitlab-token': CIRCLE_SECRET });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a valid signature presented to an unknown endpoint', async () => {
+    const res = await post(
+      { 'circleci-event-type': 'workflow-completed', 'circleci-signature': sign(CIRCLE_SECRET) },
+      'some-other-endpoint',
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('accepts a correctly signed delivery', async () => {
+    const before = await eventCount();
+    const res = await post({ 'circleci-event-type': 'workflow-completed', 'circleci-signature': sign(CIRCLE_SECRET) });
+    expect(res.status).toBe(202);
+    expect(await eventCount()).toBe(before + 1);
+  });
+
+  it('cannot create a repository in another organization', async () => {
+    // The event names "fixture-co/app", which belongs to this organization.
+    // Endpoint ownership, not payload content, decides where rows land.
+    const repos = await db.withOrg(orgId, (sql) =>
+      sql.many<{ full_name: string; provider: string }>(`select full_name, provider from repositories order by full_name`),
+    );
+    expect(repos.map((r) => r.full_name)).toContain('fixture-co/app');
+    expect(repos.every((r) => r.provider !== 'circleci')).toBe(true);
+  });
+});

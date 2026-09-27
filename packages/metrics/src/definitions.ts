@@ -229,7 +229,10 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
     minimumSampleSize: 20,
     supportedScopes: NO_DEVELOPER,
     appliedFilters: ['repositoryIds', 'teamIds', 'branches'],
-    caveats: ['Excludes queue time, which is reported separately as CI queue time. A slow pipeline and a starved runner pool look identical if the two are added together.'],
+    caveats: [
+      'Excludes queue time, which is reported separately as CI queue time. A slow pipeline and a starved runner pool look identical if the two are added together.',
+      'Covers every provider, including those that cannot report queue time, because all of them report when a run started and stopped.',
+    ],
   },
   ci_queue_time: {
     id: 'ci_queue_time',
@@ -244,7 +247,10 @@ export const METRIC_DEFINITIONS: Record<string, MetricDefinition> = {
     minimumSampleSize: 20,
     supportedScopes: NO_DEVELOPER,
     appliedFilters: ['repositoryIds', 'teamIds', 'branches'],
-    caveats: ['Rising queue time with flat build duration points at runner capacity, not at the pipeline.'],
+    caveats: [
+      'Rising queue time with flat build duration points at runner capacity, not at the pipeline.',
+      'Measured from the moment a provider says a run was enqueued. Providers that do not report one — CircleCI does not — are excluded rather than recorded as having waited no time, so this metric can cover fewer runs than build duration does.',
+    ],
   },
   failed_deployment_rate: {
     id: 'failed_deployment_rate',

@@ -464,6 +464,7 @@ export class GitLabSource implements RepositorySource {
         status: terminal ? 'completed' : 'in_progress',
         conclusion: terminal ? conclusion : null,
         createdAt,
+        enqueuedAt: createdAt,
         startedAt,
         completedAt: terminal ? finishedAt : null,
         workflow: { providerWorkflowId: 'gitlab-ci', name: 'GitLab CI', path: '.gitlab-ci.yml' },

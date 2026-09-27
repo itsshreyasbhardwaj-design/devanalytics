@@ -290,7 +290,8 @@ export async function generateDemoOrganization(db: Database, opts: GenerateOptio
               headSha: `c${number}-0`, headBranch: 'main', pullRequestId: prId, event: 'pull_request',
               status: 'completed',
               conclusion: rng() < spec.buildFailureRate ? 'failure' : 'success',
-              createdAt: createdAt.toISOString(), startedAt: startedAt.toISOString(), completedAt: completedAt.toISOString(),
+              createdAt: createdAt.toISOString(), enqueuedAt: createdAt.toISOString(),
+              startedAt: startedAt.toISOString(), completedAt: completedAt.toISOString(),
             });
             counts.workflowRuns++;
           }

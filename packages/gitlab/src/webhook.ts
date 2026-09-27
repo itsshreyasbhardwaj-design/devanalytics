@@ -440,6 +440,9 @@ function normalizePipeline(body: Json, receivedAt: string, build: Build): Canoni
         status: terminal ? 'completed' : 'in_progress',
         conclusion: terminal ? pipelineConclusion(status) : null,
         createdAt,
+        // GitLab reports the enqueue time as the pipeline's creation time, and
+        // the wait as a duration from it.
+        enqueuedAt: createdAt,
         startedAt,
         completedAt: terminal ? finishedAt : null,
         workflow: {

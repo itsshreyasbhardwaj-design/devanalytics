@@ -91,6 +91,31 @@ export interface UpsertRepoInput {
 
 export async function upsertRepository(sql: ScopedSql, input: UpsertRepoInput): Promise<Repository> {
   const id = stableId('repo', sql.orgId, input.provider, input.providerRepoId);
+
+  // A repository may already exist under this full name with a placeholder id,
+  // because a CI-only provider discovered it before the code host connected.
+  // Adopting that row is what makes the two paths converge on one repository
+  // instead of splitting pull requests and CI runs across two.
+  const existing = await sql.one<{ id: string; provider_repo_id: string }>(
+    `select id, provider_repo_id from repositories where org_id = $1 and provider = $2 and full_name = $3`,
+    [sql.orgId, input.provider, input.fullName],
+  );
+  if (existing && existing.provider_repo_id !== input.providerRepoId) {
+    await sql.query(
+      `update repositories
+          set provider_repo_id = $2, name = $3, default_branch = $4, is_private = $5,
+              team_id = coalesce($6, team_id)
+        where id = $1`,
+      [existing.id, input.providerRepoId, input.name, input.defaultBranch, input.isPrivate, input.teamId ?? null],
+    );
+    return {
+      id: existing.id, orgId: sql.orgId, provider: input.provider as Repository['provider'],
+      providerRepoId: input.providerRepoId, name: input.name, fullName: input.fullName,
+      defaultBranch: input.defaultBranch, isPrivate: input.isPrivate,
+      teamId: input.teamId ?? null, archivedAt: null,
+    };
+  }
+
   await sql.query(
     `insert into repositories (id, org_id, provider, provider_repo_id, name, full_name, default_branch, is_private, team_id)
      values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
@@ -114,6 +139,44 @@ export async function upsertRepository(sql: ScopedSql, input: UpsertRepoInput): 
     defaultBranch: input.defaultBranch, isPrivate: input.isPrivate,
     teamId: input.teamId ?? null, archivedAt: null,
   };
+}
+
+/**
+ * Resolve a repository a CI-only provider is reporting about.
+ *
+ * CircleCI knows a repository as a host and a path — "github/acme/api" — and
+ * never as GitHub's numeric id. Resolution is therefore by full name within
+ * the host, and the row is created only if nothing matches.
+ *
+ * A created row carries a placeholder provider id marked with its provenance,
+ * and deliberately does **not** guess the default branch or visibility: when
+ * the code host later connects, `upsertRepository` adopts this row by full
+ * name and fills in the real values. Nothing is overwritten on the way in,
+ * because a CI provider has no authority over what the code host recorded.
+ */
+export async function resolveHostRepository(
+  sql: ScopedSql,
+  input: { hostProvider: string; fullName: string; discoveredBy: string },
+): Promise<{ id: string; created: boolean }> {
+  const existing = await sql.value<string>(
+    `select id from repositories where org_id = $1 and provider = $2 and full_name = $3`,
+    [sql.orgId, input.hostProvider, input.fullName],
+  );
+  if (existing) return { id: existing, created: false };
+
+  const placeholderId = `${input.discoveredBy}:${input.fullName}`;
+  const id = stableId('repo', sql.orgId, input.hostProvider, placeholderId);
+  await sql.query(
+    `insert into repositories (id, org_id, provider, provider_repo_id, name, full_name, default_branch, is_private)
+     values ($1,$2,$3,$4,$5,$6,'main',true)
+     on conflict (org_id, provider, full_name) do nothing`,
+    [id, sql.orgId, input.hostProvider, placeholderId, input.fullName.split('/').pop() ?? input.fullName, input.fullName],
+  );
+  const resolved = await sql.value<string>(
+    `select id from repositories where org_id = $1 and provider = $2 and full_name = $3`,
+    [sql.orgId, input.hostProvider, input.fullName],
+  );
+  return { id: resolved ?? id, created: true };
 }
 
 export async function upsertBranch(sql: ScopedSql, repoId: string, name: string): Promise<string> {
@@ -289,6 +352,12 @@ export interface UpsertWorkflowRunInput {
   status: 'queued' | 'in_progress' | 'completed';
   conclusion?: string | null;
   createdAt: string;
+  /**
+   * When the run entered the queue. Null when the provider does not report it —
+   * CircleCI does not — in which case CI queue time excludes this run rather
+   * than recording it as instant.
+   */
+  enqueuedAt?: string | null;
   startedAt?: string | null;
   completedAt?: string | null;
 }
@@ -298,18 +367,20 @@ export async function upsertWorkflowRun(sql: ScopedSql, input: UpsertWorkflowRun
   const id = stableId('run', input.repoId, input.providerRunId, String(attempt));
   await sql.query(
     `insert into workflow_runs (id, org_id, repo_id, workflow_id, provider_run_id, run_attempt, head_sha,
-        head_branch, pull_request_id, event, status, conclusion, created_at, started_at, completed_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        head_branch, pull_request_id, event, status, conclusion, created_at, enqueued_at, started_at, completed_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
      on conflict (repo_id, provider_run_id, run_attempt) do update set
        status = excluded.status,
        conclusion = coalesce(excluded.conclusion, workflow_runs.conclusion),
        pull_request_id = coalesce(excluded.pull_request_id, workflow_runs.pull_request_id),
        head_branch = coalesce(excluded.head_branch, workflow_runs.head_branch),
+       enqueued_at = least(workflow_runs.enqueued_at, excluded.enqueued_at),
        started_at = least(workflow_runs.started_at, excluded.started_at),
        completed_at = coalesce(workflow_runs.completed_at, excluded.completed_at)`,
     [id, sql.orgId, input.repoId, input.workflowId, input.providerRunId, attempt, input.headSha,
      input.headBranch ?? null, input.pullRequestId ?? null, input.event ?? '', input.status,
-     input.conclusion ?? null, input.createdAt, input.startedAt ?? null, input.completedAt ?? null],
+     input.conclusion ?? null, input.createdAt, input.enqueuedAt ?? null, input.startedAt ?? null,
+     input.completedAt ?? null],
   );
   return id;
 }

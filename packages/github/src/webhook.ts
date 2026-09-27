@@ -287,6 +287,8 @@ function normalizeWorkflowRun(body: Json, build: Build): CanonicalEvent[] {
     status: action === 'completed' ? 'completed' : action === 'in_progress' ? 'in_progress' : 'queued',
     conclusion: str(run.conclusion),
     createdAt: str(run.created_at),
+    // GitHub reports the enqueue time as the run's creation time.
+    enqueuedAt: str(run.created_at),
     startedAt: str(run.run_started_at),
     completedAt: action === 'completed' ? (str(run.updated_at) ?? null) : null,
     workflow: {

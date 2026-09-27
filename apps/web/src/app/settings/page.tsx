@@ -141,8 +141,8 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle>Providers</CardTitle>
             <p className="text-xs text-slate-400">
-              GitHub and GitLab are implemented. The others have their event mappings written down and adapters stubbed;
-              adding one touches nothing outside its adapter.
+              GitHub, GitLab and CircleCI are implemented. Jenkins has its event mapping written down and its adapter
+              stubbed. CircleCI is CI-only: its runs attach to a repository connected through a code host.
             </p>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -153,6 +153,22 @@ export default async function SettingsPage() {
               </div>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
                 Webhooks and REST backfill, HMAC-SHA256 signature verification over raw bytes.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-emerald-900/60 bg-emerald-950/20 p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-100">CircleCI</span>
+                <Badge tone="good">implemented</Badge>
+                <Badge tone="muted">CI only</Badge>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                Webhooks and API v2 backfill, HMAC-SHA256 over raw bytes. Runs resolve to the repository connected
+                through GitHub or GitLab rather than creating a second one.
+              </p>
+              <p className="mt-1.5 text-[11px] text-slate-400">
+                CircleCI reports no runner wait, so its runs are excluded from CI queue time rather than recorded as
+                instant. Build duration and success rate are unaffected.
               </p>
             </div>
 

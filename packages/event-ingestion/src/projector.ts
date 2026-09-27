@@ -3,6 +3,7 @@ import {
   type CanonicalEvent,
 } from '@devanalytics/core';
 import {
+  resolveHostRepository,
   upsertCommit,
   upsertDeployment,
   upsertPullRequest,
@@ -40,14 +41,27 @@ const n = (v: unknown): number | null => (typeof v === 'number' ? v : null);
 export async function projectEvent(db: Database, orgId: string, raw: unknown): Promise<ProjectionResult> {
   const event = canonicalEventSchema.parse(raw);
   return db.withOrg(orgId, async (sql) => {
-    const repo = await upsertRepository(sql, {
-      provider: event.provider,
-      providerRepoId: event.repository.providerRepoId,
-      name: event.repository.name,
-      fullName: event.repository.fullName,
-      defaultBranch: event.repository.defaultBranch,
-      isPrivate: event.repository.isPrivate,
-    });
+    // A CI-only provider reports runs for a repository hosted elsewhere. Its
+    // events resolve against that repository and never describe it: creating a
+    // second row under the CI provider's name would split pull requests and CI
+    // runs across two repositories, and build success rate scoped to the one a
+    // user actually connected would report no data.
+    const hostProvider = event.repository.provider ?? event.provider;
+    const repoId = event.repository.isReference
+      ? (await resolveHostRepository(sql, {
+          hostProvider,
+          fullName: event.repository.fullName,
+          discoveredBy: event.provider,
+        })).id
+      : (await upsertRepository(sql, {
+          provider: hostProvider,
+          providerRepoId: event.repository.providerRepoId,
+          name: event.repository.name,
+          fullName: event.repository.fullName,
+          defaultBranch: event.repository.defaultBranch,
+          isPrivate: event.repository.isPrivate,
+        })).id;
+    const repo = { id: repoId };
 
     const actorId = event.actor
       ? (
@@ -145,6 +159,17 @@ async function apply(sql: ScopedSql, event: CanonicalEvent, repoId: string, acto
           [repoId, prNumbers[0] as number],
         );
       }
+      // CI providers that do not know about pull requests — CircleCI reports a
+      // branch and a revision and nothing else — can still be linked through
+      // the commit they built.
+      const headSha = s(p.headSha);
+      if (!pullRequestId && headSha) {
+        pullRequestId = await sql.value<string>(
+          `select pull_request_id from commits
+            where repo_id = $1 and sha = $2 and pull_request_id is not null limit 1`,
+          [repoId, headSha],
+        );
+      }
       await upsertWorkflowRun(sql, {
         repoId, workflowId,
         providerRunId: s(p.providerRunId) ?? event.idempotencyKey,
@@ -156,6 +181,9 @@ async function apply(sql: ScopedSql, event: CanonicalEvent, repoId: string, acto
         status: (s(p.status) ?? 'queued') as 'queued' | 'in_progress' | 'completed',
         conclusion: s(p.conclusion),
         createdAt: s(p.createdAt) ?? event.occurredAt,
+        // Null when the provider does not report an enqueue time; CI queue
+        // time then excludes the run rather than treating it as instant.
+        enqueuedAt: s(p.enqueuedAt),
         startedAt: s(p.startedAt),
         completedAt: s(p.completedAt),
       });

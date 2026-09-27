@@ -275,6 +275,7 @@ export class GitHubSource implements RepositorySource {
         status: completed ? 'completed' : 'in_progress',
         conclusion: s(run.conclusion),
         createdAt: s(run.created_at),
+        enqueuedAt: s(run.created_at),
         startedAt: s(run.run_started_at),
         completedAt: completed ? s(run.updated_at) : null,
         workflow: { providerWorkflowId: numStr(run.workflow_id) ?? '', name: s(run.name) ?? 'workflow', path: s(run.path) },

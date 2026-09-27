@@ -8,6 +8,15 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- **CircleCI provider.** Webhook adapter (workflow runs) and API v2 backfill, registered alongside the code hosts.
+  CircleCI is CI-only, so its events name the repository's *host* and resolve against a repository connected through
+  GitHub or GitLab rather than creating a second one. Repositories converge whichever arrives first: a row discovered
+  by CircleCI is adopted by the code host when it connects.
+- `workflow_runs.enqueued_at`, a nullable queue anchor (migration `0009`). CircleCI reports no runner wait, so its runs
+  are excluded from CI queue time rather than recorded as instant; build duration and success rate are unaffected.
+- CI runs are linked to pull requests through the commit they built when a provider reports no pull request number,
+  which also helps GitLab branch pipelines.
+- A cross-provider test asserting every adapter states an enqueue time explicitly, present or null.
 - **GitLab provider.** Webhook adapter (push, merge requests, approvals, diff notes, pipelines, deployments) and
   REST/GraphQL backfill, registered alongside GitHub. Metrics, detection, investigations and the dashboard span both
   providers with no provider-aware code outside the adapters.
@@ -17,10 +26,17 @@ All notable changes to this project are documented here. The format follows
   system notes because GitLab's approvals endpoint reports who but not when.
 - `pr_size` now reports how many pull requests it excluded for unknown size, the way lead time already reported
   unattributable deployments.
-- 71 tests covering the adapter, the backfill source, mixed-provider ingestion and GitLab webhook spoofing.
+- 71 tests covering the GitLab adapter, its backfill source, mixed-provider ingestion and GitLab webhook spoofing.
+- 55 tests covering the CircleCI adapter, repository resolution, its backfill source, webhook spoofing, and the two
+  repository arrival orders.
 
 ### Changed
 
+- **`workflow_runs.enqueued_at` replaces `created_at` as the CI queue anchor** (migration `0009`). Queue time was
+  `started_at - created_at`, which assumes every provider reports when a run was enqueued. Existing rows are backfilled
+  from `created_at`, which is correct for GitHub and GitLab.
+- **Repositories are unique on `(org_id, provider, full_name)`** (migration `0009`), so a provider that knows a
+  repository only by path can resolve it instead of duplicating it.
 - **`pull_requests.additions`, `deletions` and `changed_files` are nullable** (migration `0008`). They were
   `not null default 0`, which is safe only while every provider reports diff statistics on every event. GitLab's merge
   request webhook carries none, so a GitLab repository would have recorded every merge request as zero lines changed and
@@ -73,7 +89,7 @@ First public release.
 - AES-256-GCM secret storage, hashed API tokens, four-role RBAC, rate limiting, audit logging
 
 **Verification**
-- 219 unit, integration and security tests against real PostgreSQL 16, plus 22 end-to-end tests against a production build
+- 369 unit, integration and security tests against real PostgreSQL 16, plus 25 end-to-end tests against a production build
 - Metric engine checked against fifteen hand-derived expected values
 - Change intelligence checked against a dataset with a planted regression
 - Benchmark suite with a stated methodology

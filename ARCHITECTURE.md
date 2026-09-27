@@ -63,6 +63,7 @@ GitHub / GitLab / CircleCI / Jenkins
 | `event-ingestion` | Webhook receiver, idempotency, queue, projector, worker, provider registry. |
 | `github` | GitHub webhook adapter and REST backfill. The only GitHub-aware code in the system. |
 | `gitlab` | GitLab webhook adapter and REST/GraphQL backfill. The only GitLab-aware code in the system. |
+| `circleci` | CircleCI webhook adapter and API v2 backfill. CI-only: its events resolve to a repository hosted elsewhere. |
 | `metrics` | Metric registry, fact queries, the analytics engine, snapshots, formatting. |
 | `anomaly-detection` | Robust statistics and the detector. Pure functions; no database access. |
 | `investigations` | Contribution decomposition, correlation, the investigator, scheduled detection. |
@@ -190,9 +191,8 @@ Implement `WebhookAdapter` (signature verification and normalization to canonica
 `RepositorySource` (backfill). Register it. Nothing else in the system changes — the metric engine, snapshots, detection,
 investigations, API and UI never name a provider.
 
-The event mappings for CircleCI and Jenkins are written down in `packages/event-ingestion/src/providers/planned.ts`,
-including the parts that do not map cleanly (CircleCI reports no queue timestamp, so `ci_queue_time` must return
-`insufficient_data` rather than zero for CircleCI-only repositories).
+The event mapping for Jenkins is written down in `packages/event-ingestion/src/providers/planned.ts`, including the
+parts that do not map cleanly.
 
 ### What GitLab actually cost
 
@@ -223,5 +223,41 @@ the entire content of review latency.
 
 **The schema change.** `pull_requests.additions` was `not null default 0`, which is safe only while every provider
 reports diff statistics on every event. GitLab does not, so those columns became nullable and `pr_size` now excludes
-unknown sizes and reports the excluded count. This is the one place where a second provider changed something outside
-its own adapter, and it changed it in the direction the product already required: unknown is not zero.
+unknown sizes and reports the excluded count. This changed something outside the adapter, and it changed it in the
+direction the product already required: unknown is not zero.
+
+### What CircleCI cost
+
+CircleCI is the first provider that does not host code, and it broke two assumptions that had held while every provider
+was a code host.
+
+**An event is about someone else's repository.** CircleCI identifies a repository by host and path — `gh/acme/api`, or
+`https://github.com/acme/api` — and never by GitHub's numeric repository id. Filing its events under a
+`provider = 'circleci'` repository would create a second row for a repository that already exists: pull requests would
+sit on one and CI runs on the other, and build success rate scoped to the repository a user actually connected would
+report no data at all.
+
+So the canonical repository descriptor gained two optional fields. `provider` names the code host when it differs from
+the sender, and `isReference` says the descriptor *identifies* a repository rather than describing it — a CI provider
+knows a repository's path but not its default branch or visibility, and must not overwrite what the code host recorded.
+Resolution is by `(org_id, provider, full_name)`, which migration `0009` makes unique.
+
+The two arrival orders converge on one row. If the code host connects first, CircleCI resolves onto it. If CircleCI
+arrives first, it creates a row carrying a placeholder id marked with its provenance (`circleci:acme/api`), and
+`upsertRepository` adopts that row by full name when the code host later connects, filling in the real id, default
+branch and visibility.
+
+**Queue time is not duration minus start.** `ci_queue_time` was `started_at - created_at`, which assumes the provider
+reports when a run was enqueued. CircleCI's payloads report when a workflow was created and when it stopped, and nothing
+about waiting for a runner. Setting `created_at` to the workflow's own start would have made queue time a fabricated
+zero for every CircleCI run and dragged a mixed organization's median toward it.
+
+`workflow_runs.enqueued_at` is now a separate nullable column and the queue anchor. Null means the provider does not
+report it, and those runs are excluded. Build duration is unaffected, because it measures `completed_at - started_at`
+and CircleCI does report the interval it actually measures. A unit test asserts every adapter states an enqueue time
+explicitly, present or null — an adapter that simply forgot the field would be indistinguishable from one that
+deliberately reports none, and would vanish from the metric silently.
+
+**Linking runs to pull requests.** CircleCI reports a branch and a revision, never a pull request number. The projector
+falls back to the commit: a run whose head sha belongs to a commit on a pull request is linked through it. This also
+benefits GitLab branch pipelines.

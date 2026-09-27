@@ -5,14 +5,16 @@
  * before globalSetup: seeding from globalSetup would delete the database out
  * from under the server that had already opened it.
  */
+import { createHmac } from 'node:crypto';
 import { rmSync, writeFileSync, mkdirSync } from 'node:fs';
-import { MS_PER_DAY } from '@devanalytics/core';
+import { MS_PER_DAY, type WebhookAdapter } from '@devanalytics/core';
 import { Database, generateApiToken, hashToken } from '@devanalytics/db';
 import { generateDemoOrganization } from '@devanalytics/demo-data';
 import { MetricEngine, refreshSnapshots } from '@devanalytics/metrics';
 import { persistDetections, runDetection } from '@devanalytics/investigations';
 import { EventWorker, IngestionService, PostgresJobQueue } from '@devanalytics/event-ingestion';
 import { GitLabWebhookAdapter } from '@devanalytics/gitlab';
+import { CircleCiWebhookAdapter } from '@devanalytics/circleci';
 
 const dataDir = process.env.E2E_DATA_DIR ?? '.e2e-pgdata';
 rmSync(dataDir, { recursive: true, force: true });
@@ -50,9 +52,16 @@ const queue = new PostgresJobQueue(db);
 const ingestion = new IngestionService({
   db,
   queue,
-  adapters: new Map([['gitlab', new GitLabWebhookAdapter()]]) as never,
-  lookupEndpoint: async () => ({ id: 'e2e-gitlab', orgId: demo.orgId, provider: 'gitlab', secret: GITLAB_SECRET }),
+  adapters: new Map<string, WebhookAdapter>([
+    ['gitlab', new GitLabWebhookAdapter()],
+    ['circleci', new CircleCiWebhookAdapter()],
+  ]),
+  lookupEndpoint: async (id: string) =>
+    id === 'e2e-circleci'
+      ? { id, orgId: demo.orgId, provider: 'circleci', secret: CIRCLECI_SECRET }
+      : { id, orgId: demo.orgId, provider: 'gitlab', secret: GITLAB_SECRET },
 });
+const CIRCLECI_SECRET = 'e2e-circleci-secret';
 const gitlabWorker = new EventWorker(db, queue, 'e2e-seed');
 
 const gitlabProject = {
@@ -103,6 +112,60 @@ for (let i = 0; i < 8; i++) {
 await gitlabWorker.drain(100);
 
 /**
+ * CircleCI runs for a repository the generated GitHub data already created.
+ *
+ * Ingested through the real webhook path so the suite proves the CI-only case:
+ * the runs must attach to the existing repository rather than create a second
+ * one, and must stay out of CI queue time because CircleCI reports no wait.
+ */
+const circleRepo = demo.repositories.find((r) => r.fullName.endsWith('/checkout')) ?? demo.repositories[0];
+if (circleRepo) {
+  for (let i = 0; i < 6; i++) {
+    const created = day(10 - i);
+    const started = new Date(created.getTime() + 90_000);
+    const stopped = new Date(started.getTime() + (4 + i) * 60_000);
+    const payload = {
+      id: `e2e-circle-${i}`,
+      type: 'workflow-completed',
+      happened_at: stopped.toISOString(),
+      project: { id: `p-${i}`, name: 'checkout', slug: `gh/${circleRepo.fullName}` },
+      organization: { id: 'o1', name: demo.slug },
+      workflow: {
+        id: `wf-e2e-${i}`,
+        name: i % 2 === 0 ? 'build-and-test' : 'nightly',
+        status: i === 4 ? 'failed' : 'success',
+        created_at: started.toISOString(),
+        stopped_at: stopped.toISOString(),
+      },
+      pipeline: {
+        id: `pl-e2e-${i}`,
+        number: 500 + i,
+        created_at: created.toISOString(),
+        trigger: { type: 'webhook' },
+        vcs: {
+          provider_name: 'github',
+          target_repository_url: `https://github.com/${circleRepo.fullName}`,
+          revision: `circle${String(i).padStart(34, '0')}`,
+          branch: 'main',
+        },
+      },
+    };
+    const circleBody = JSON.stringify(payload);
+    await ingestion.receive({
+      provider: 'circleci',
+      endpointId: 'e2e-circleci',
+      body: circleBody,
+      headers: {
+        'circleci-event-type': 'workflow-completed',
+        'circleci-signature': `v1=${createHmac('sha256', CIRCLECI_SECRET).update(circleBody, 'utf8').digest('hex')}`,
+      },
+      receivedAt: new Date().toISOString(),
+    });
+  }
+  await gitlabWorker.drain(100);
+}
+
+/**
  * An owner API token for the suite.
  *
  * The end-to-end tests authenticate exactly as a real client does, rather than
@@ -133,6 +196,9 @@ await db.unscoped((sql) =>
 const gitlabCount = await db.withOrg(demo.orgId, (sql) =>
   sql.value<number>(`select count(*)::int from pull_requests p join repositories r on r.id = p.repo_id where r.provider = 'gitlab'`),
 );
+const circleCount = await db.withOrg(demo.orgId, (sql) =>
+  sql.value<number>(`select count(*)::int from workflow_runs where enqueued_at is null`),
+);
 await db.close();
 
 mkdirSync('tests/e2e/.state', { recursive: true });
@@ -140,6 +206,6 @@ writeFileSync('tests/e2e/.state/token', token);
 writeFileSync('tests/e2e/.state/org', demo.orgId);
 
 console.log(
-  `[e2e] seeded ${demo.slug} (${demo.orgId}) with ${demo.counts.pullRequests} GitHub pull requests ` +
-    `and ${Number(gitlabCount)} GitLab merge requests into ${dataDir}`,
+  `[e2e] seeded ${demo.slug} (${demo.orgId}) with ${demo.counts.pullRequests} GitHub pull requests, ` +
+    `${Number(gitlabCount)} GitLab merge requests and ${Number(circleCount)} CircleCI runs into ${dataDir}`,
 );

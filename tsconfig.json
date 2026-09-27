@@ -52,6 +52,9 @@
       ],
       "@devanalytics/gitlab": [
         "./packages/gitlab/src/index.ts"
+      ],
+      "@devanalytics/circleci": [
+        "./packages/circleci/src/index.ts"
       ]
     }
   },

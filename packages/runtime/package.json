@@ -17,6 +17,7 @@
     "@devanalytics/investigations": "workspace:*",
     "@devanalytics/event-ingestion": "workspace:*",
     "@devanalytics/github": "workspace:*",
-    "@devanalytics/gitlab": "workspace:*"
+    "@devanalytics/gitlab": "workspace:*",
+    "@devanalytics/circleci": "workspace:*"
   }
 }

@@ -77,8 +77,9 @@ test.describe('dashboard', () => {
 
     await page.locator('a[href^="/pull-requests/"]').first().click();
     await expect(page.getByRole('heading', { name: 'Timeline' })).toBeVisible();
-    await expect(page.getByText('Cycle time')).toBeVisible();
-    await expect(page.getByText('Time to first review')).toBeVisible();
+    await expect(page.getByText('Cycle time', { exact: true })).toBeVisible();
+    // Exact: the empty-reviews note also contains this phrase.
+    await expect(page.getByText('Time to first review', { exact: true })).toBeVisible();
   });
 
   test('shows GitLab merge requests alongside GitHub pull requests', async ({ page }) => {
@@ -108,6 +109,40 @@ test.describe('dashboard', () => {
     // The same phrase also appears in the metric's caveats, so match the banner.
     await expect(page.getByText(/\d+ records excluded/)).toBeVisible();
     await expect(page.getByText(/did not report diff statistics/).first()).toBeVisible();
+  });
+
+  test('attaches CircleCI runs to the repository its code host connected', async ({ request }) => {
+    const repos = await (await request.get('/api/v1/repositories')).json();
+    const names: string[] = repos.data.repositories.map((r: { fullName: string }) => r.fullName);
+
+    // No repository was created under CircleCI's name. A second row would put
+    // pull requests on one and CI runs on the other.
+    expect(names.filter((n) => n.includes('checkout'))).toHaveLength(1);
+
+    const checkout = repos.data.repositories.find((r: { fullName: string }) => r.fullName.endsWith('/checkout'));
+    expect(checkout).toBeDefined();
+
+    const runs = await (await request.get(`/api/v1/ci/runs?repositoryId=${checkout.id}&limit=500`)).json();
+    const circle = runs.data.runs.filter((r: { name: string }) => r.name === 'build-and-test');
+
+    // The CircleCI workflow is recorded against the GitHub repository.
+    expect(circle.length).toBeGreaterThan(0);
+    expect(circle[0].repository).toBe(checkout.fullName);
+  });
+
+  test('keeps CircleCI out of queue time while counting it in build duration', async ({ page, request }) => {
+    const queue = await (await request.get('/api/v1/metrics/ci_queue_time/value?period=30d')).json();
+    const duration = await (await request.get('/api/v1/metrics/build_duration/value?period=30d')).json();
+
+    // Both report real values, but queue time covers fewer runs: CircleCI
+    // reports no runner wait, so its runs are excluded rather than recorded as
+    // instant, while their duration is measured like everyone else's.
+    expect(queue.data.result.status).toBe('ok');
+    expect(duration.data.result.status).toBe('ok');
+    expect(duration.data.result.sampleSize).toBeGreaterThan(queue.data.result.sampleSize);
+
+    await page.goto('/metrics/ci_queue_time?period=30d');
+    await expect(page.getByText(/Providers that do not report one/).first()).toBeVisible();
   });
 
   test('teams page explains why individuals are not ranked', async ({ page }) => {

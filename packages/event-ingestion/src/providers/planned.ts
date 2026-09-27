@@ -30,19 +30,6 @@ export interface PlannedMapping {
   notes: string[];
 }
 
-export const CIRCLECI_MAPPING: PlannedMapping = {
-  provider: 'circleci',
-  signature: 'circleci-signature header, v1=<hmac-sha256 of the raw body>.',
-  events: {
-    'workflow-completed': 'workflow_run.completed',
-    'job-completed': null,
-  },
-  notes: [
-    'CircleCI webhooks carry no queue timestamp, so ci_queue_time is unavailable for CircleCI-only repositories and must return insufficient_data rather than zero.',
-    'CircleCI is CI-only: pull request and deployment events still come from the code host.',
-  ],
-};
-
 export const JENKINS_MAPPING: PlannedMapping = {
   provider: 'jenkins',
   signature: 'No native signing. Endpoints require a bearer token over TLS and an allowlist of controller IPs.',
@@ -56,15 +43,29 @@ export const JENKINS_MAPPING: PlannedMapping = {
   ],
 };
 
-export const PLANNED_PROVIDERS: PlannedMapping[] = [CIRCLECI_MAPPING, JENKINS_MAPPING];
+export const PLANNED_PROVIDERS: PlannedMapping[] = [JENKINS_MAPPING];
 
 /**
- * GitLab was planned here and is now implemented in `@devanalytics/gitlab`.
- * Implementing it required no change to the ingestion pipeline, the metric
- * engine or the UI, which was the point of this boundary — but it did surface
- * one thing the mapping had not anticipated: GitLab's merge request webhook
- * carries no diff statistics, so `pull_requests.additions` had to become
- * nullable rather than default to zero. See migration 0008.
+ * GitLab and CircleCI were planned here and are now implemented in
+ * `@devanalytics/gitlab` and `@devanalytics/circleci`.
+ *
+ * Neither required a change to the metric engine, investigations or the UI,
+ * which was the point of this boundary. Each did surface one assumption the
+ * canonical model had baked in while every provider was a well-behaved code
+ * host:
+ *
+ *   GitLab  - merge request webhooks carry no diff statistics, so
+ *             `pull_requests.additions` had to become nullable rather than
+ *             default to zero (migration 0008).
+ *   CircleCI- it does not host code, so an event has to name the repository's
+ *             *host* and be resolved against it rather than creating a second
+ *             repository; and it never reports a runner wait, so
+ *             `workflow_runs.enqueued_at` had to become a separate nullable
+ *             column rather than being inferred from the run's creation time
+ *             (migration 0009).
+ *
+ * Both changes moved the schema in the direction the product already required:
+ * unknown is not zero.
  */
 
 export class PlannedWebhookAdapter implements WebhookAdapter {

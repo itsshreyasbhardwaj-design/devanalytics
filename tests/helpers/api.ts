@@ -5,6 +5,7 @@ import { generateApiToken, hashToken, type Database } from '@devanalytics/db';
 import { EventWorker, IngestionService, PostgresJobQueue } from '@devanalytics/event-ingestion';
 import { GitHubWebhookAdapter } from '@devanalytics/github';
 import { GitLabWebhookAdapter } from '@devanalytics/gitlab';
+import { CircleCiWebhookAdapter } from '@devanalytics/circleci';
 import { Investigator } from '@devanalytics/investigations';
 import { MetricEngine } from '@devanalytics/metrics';
 import { DevAnalytics } from '@devanalytics/sdk';
@@ -49,7 +50,7 @@ export interface TestEndpoint {
   endpointId: string;
   orgId: string;
   secret: string;
-  provider?: 'github' | 'gitlab';
+  provider?: 'github' | 'gitlab' | 'circleci';
 }
 
 export function createTestApi(db: Database, endpointSecret?: TestEndpoint | TestEndpoint[]): TestApi {
@@ -64,6 +65,7 @@ export function createTestApi(db: Database, endpointSecret?: TestEndpoint | Test
     adapters: new Map([
       ['github', new GitHubWebhookAdapter()],
       ['gitlab', new GitLabWebhookAdapter() as unknown as GitHubWebhookAdapter],
+      ['circleci', new CircleCiWebhookAdapter() as unknown as GitHubWebhookAdapter],
     ]),
     ...(endpoints.length > 0
       ? {

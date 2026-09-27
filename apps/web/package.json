@@ -32,7 +32,8 @@
     "server-only": "^0.0.1",
     "@electric-sql/pglite": "^0.2.15",
     "pg": "^8.13.1",
-    "@devanalytics/gitlab": "workspace:*"
+    "@devanalytics/gitlab": "workspace:*",
+    "@devanalytics/circleci": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.0.2",

@@ -211,10 +211,13 @@ function spec(metric: string): Spec {
       return {
         base: RUN_BASE,
         ts: 'wr.created_at',
-        val: MINUTES('wr.started_at', 'wr.created_at'),
-        num: MINUTES('wr.started_at', 'wr.created_at'),
+        val: MINUTES('wr.started_at', 'wr.enqueued_at'),
+        num: MINUTES('wr.started_at', 'wr.enqueued_at'),
         den: '1',
-        where: ['wr.started_at is not null', 'wr.started_at >= wr.created_at'],
+        // A provider that does not report when a run was enqueued cannot tell
+        // us how long it waited. CircleCI is one. Those runs are excluded
+        // rather than recorded as having waited no time at all.
+        where: ['wr.enqueued_at is not null', 'wr.started_at is not null', 'wr.started_at >= wr.enqueued_at'],
       };
 
     case 'failed_deployment_rate':

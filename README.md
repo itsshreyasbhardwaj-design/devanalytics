@@ -2,10 +2,10 @@
 
 **Engineering intelligence that tells you what changed, what accounts for it, and what it cannot tell you.**
 
-DevAnalytics ingests real development events — pull requests, reviews, commits, CI runs, deployments — from **GitHub and
-GitLab**, normalizes them into a provider-neutral model, computes engineering metrics from them, detects statistically
-unusual movements against each scope's own history, and decomposes those movements into the slices that arithmetically
-account for them.
+DevAnalytics ingests real development events — pull requests, reviews, commits, CI runs, deployments — from **GitHub,
+GitLab and CircleCI**, normalizes them into a provider-neutral model, computes engineering metrics from them, detects
+statistically unusual movements against each scope's own history, and decomposes those movements into the slices that
+arithmetically account for them.
 
 It is not a dashboard with invented numbers. Every figure is computed from ingested rows or reported as
 **"Insufficient data"** with the observation count. That is enforced by the type system, not by discipline.
@@ -62,17 +62,26 @@ requests record `null` rather than zero lines, PR size excludes them, and the da
 
 A smaller number of real observations beats a larger number of fabricated ones.
 
-### Two providers, one set of metrics
+### Three providers, one set of metrics
 
-| | GitHub | GitLab |
-| --- | --- | --- |
-| Authenticity | HMAC-SHA256 over raw bytes | `X-Gitlab-Token` bearer secret, constant-time (GitLab offers no HMAC — TLS is required) |
-| Webhooks | pull requests, reviews, review comments, CI runs, deployments | merge requests, approvals, diff notes, pipelines, deployments |
-| Backfill | REST | REST, plus GraphQL for diff statistics, which GitLab's REST API does not expose |
-| Quirks handled | — | `iid` vs `id`, three timestamp formats, no `merged_at` on webhooks, queue time as a duration rather than a start time, `short_sha` on deployments |
+| | GitHub | GitLab | CircleCI |
+| --- | --- | --- | --- |
+| Hosts code | yes | yes | **no** — CI only |
+| Authenticity | HMAC-SHA256 over raw bytes | `X-Gitlab-Token` bearer secret, constant-time (GitLab offers no HMAC — TLS is required) | HMAC-SHA256 over raw bytes, `v1=` |
+| Webhooks | pull requests, reviews, review comments, CI runs, deployments | merge requests, approvals, diff notes, pipelines, deployments | workflow runs |
+| Backfill | REST | REST, plus GraphQL for diff statistics, which GitLab's REST API does not expose | API v2 |
+| Reports queue time | yes | yes | **no** — excluded rather than shown as instant |
 
-Adding GitLab required no change to the ingestion pipeline, metric engine, investigations or UI — which was the point of
-the provider boundary. It did require one honest change to the schema: see `additions` above.
+None of the three required a change to the metric engine, investigations or the UI — that is what the provider boundary
+is for. Each of the two added after GitHub did surface one assumption the canonical model had baked in while every
+provider was a well-behaved code host:
+
+- **GitLab** carries no diff statistics on merge request webhooks, so PR size became nullable.
+- **CircleCI** does not host code, so an event names the repository's *host* and resolves against it rather than
+  creating a second repository — and it never reports a runner wait, so enqueue time became a separate nullable column
+  instead of being inferred from a run's creation time.
+
+Both moved the schema the same way: unknown is not zero.
 
 ### Change intelligence
 
@@ -193,6 +202,16 @@ push_events, merge_requests_events, note_events, pipeline_events, deployment_eve
 GitLab authenticates with a bearer token rather than a body signature, so **serve the endpoint over TLS** and leave
 "Enable SSL verification" on.
 
+CircleCI (Project Settings → Webhooks):
+
+```
+workflow-completed
+```
+
+`job-completed` is deliberately not subscribed: jobs are the stages inside a workflow, and ingesting them would count
+every run-derived metric once per stage. A CircleCI project must correspond to a repository already connected through
+GitHub or GitLab — CircleCI knows a repository by host and path, never by the host's repository id.
+
 Run the worker alongside the app:
 
 ```bash
@@ -305,7 +324,7 @@ nobody else.
 ## Testing
 
 ```bash
-pnpm test              # 288 unit + integration + security tests
+pnpm test              # 369 unit + integration + security tests
 pnpm test:e2e          # 25 Playwright tests against a production build
 pnpm typecheck
 pnpm lint
@@ -313,7 +332,7 @@ pnpm a11y              # contrast, heading order, landmarks, accessible names
 pnpm bench
 ```
 
-**288 unit, integration and security tests, plus 25 end-to-end tests.** Every integration and security test runs
+**369 unit, integration and security tests, plus 25 end-to-end tests.** Every integration and security test runs
 against a real, freshly-migrated PostgreSQL 16. The end-to-end suite runs against a production build and authenticates
 with a real API token, not a development bypass.
 
@@ -325,8 +344,8 @@ right repository for the right reason.
 Accessibility is audited across all thirteen pages for WCAG AA contrast, heading order, landmarks and accessible names
 (`pnpm a11y`). All pass.
 
-Security tests cover webhook spoofing for both providers (unsigned, wrongly signed, wrong algorithm, wrong endpoint,
-tampered body, GitHub signature presented to a GitLab endpoint, token prefix),
+Security tests cover webhook spoofing for all three providers (unsigned, wrongly signed, wrong algorithm, wrong
+endpoint, tampered body, one provider's credential presented to another's endpoint, token prefix),
 tenant isolation through the HTTP layer (cross-org reads, scoped metrics, exports, AI answers, secret leakage), SQL
 injection against the guard (20 rejected patterns, including keywords hidden in string literals), and exactly which
 tables each database role may reach.
@@ -370,8 +389,9 @@ AI · Vitest · Playwright · pnpm workspaces
 
 ## Roadmap
 
-- CircleCI and Jenkins adapters — event mappings already written down, including where they do not map cleanly
+- Jenkins adapter — event mapping already written down, including where it does not map cleanly
 - GitLab commit-author resolution during backfill (webhook pushes attribute commits to the pusher)
+- Bitbucket as a code host, which would let CircleCI's Bitbucket projects be ingested instead of ignored
 - Incident data for a true DORA change failure rate (the current `failed_deployment_rate` is a lower bound and says so)
 - Per-branch snapshot scopes
 - Alerting on anomalies (webhook, Slack)

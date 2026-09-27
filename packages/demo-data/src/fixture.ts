@@ -177,7 +177,8 @@ export async function loadFixture(db: Database): Promise<FixtureIds> {
         repoId: repo.id, workflowId, providerRunId: `run-${i}`, headSha: `sha-${i}`, headBranch: 'main',
         event: 'push', status: 'completed',
         conclusion: i < 24 ? 'success' : 'failure',
-        createdAt: created.toISOString(), startedAt: started.toISOString(), completedAt: completed.toISOString(),
+        createdAt: created.toISOString(), enqueuedAt: created.toISOString(),
+        startedAt: started.toISOString(), completedAt: completed.toISOString(),
       });
     }
     for (let i = 0; i < 2; i++) {
@@ -185,7 +186,7 @@ export async function loadFixture(db: Database): Promise<FixtureIds> {
       await upsertWorkflowRun(sql, {
         repoId: repo.id, workflowId, providerRunId: `cancelled-${i}`, headSha: `csha-${i}`, headBranch: 'main',
         event: 'push', status: 'completed', conclusion: 'cancelled',
-        createdAt: created.toISOString(), startedAt: null,
+        createdAt: created.toISOString(), enqueuedAt: created.toISOString(), startedAt: null,
         completedAt: new Date(created.getTime() + 60_000).toISOString(),
       });
     }

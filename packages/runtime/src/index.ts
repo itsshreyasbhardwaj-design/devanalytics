@@ -4,6 +4,7 @@ import { Database } from '@devanalytics/db';
 import { DefaultProviderRegistry, EventWorker, IngestionService, PostgresJobQueue, RedisJobQueue, type JobQueue, type RedisLike } from '@devanalytics/event-ingestion';
 import { GitHubWebhookAdapter } from '@devanalytics/github';
 import { GitLabWebhookAdapter } from '@devanalytics/gitlab';
+import { CircleCiWebhookAdapter } from '@devanalytics/circleci';
 import { Investigator } from '@devanalytics/investigations';
 import { MetricEngine } from '@devanalytics/metrics';
 
@@ -99,7 +100,8 @@ export async function createRuntime(config: RuntimeConfig = readConfig()): Promi
 
   const registry = new DefaultProviderRegistry()
     .registerWebhook(new GitHubWebhookAdapter())
-    .registerWebhook(new GitLabWebhookAdapter());
+    .registerWebhook(new GitLabWebhookAdapter())
+    .registerWebhook(new CircleCiWebhookAdapter());
   const ingestion = new IngestionService({ db, queue, adapters: registry.adapterMap });
   const worker = new EventWorker(db, queue);
 

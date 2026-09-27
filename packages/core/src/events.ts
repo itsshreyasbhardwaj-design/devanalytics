@@ -40,6 +40,23 @@ const repoSchema = z.object({
   name: z.string(),
   defaultBranch: z.string(),
   isPrivate: z.boolean(),
+  /**
+   * The code host, when it differs from the provider that sent the event.
+   *
+   * A CI-only provider such as CircleCI reports runs for a repository hosted
+   * on GitHub or Bitbucket. Its events must attach to that repository rather
+   * than create a second one under the CI provider's name, so they carry the
+   * host here and the projector resolves against it. Omitted by code hosts,
+   * for whom sender and host are the same.
+   */
+  provider: providerSchema.optional(),
+  /**
+   * True when the descriptor identifies a repository rather than describing
+   * it. A CI provider knows a repository's host and path but not its default
+   * branch or visibility, so those fields must not overwrite what the code
+   * host already recorded.
+   */
+  isReference: z.boolean().optional(),
 });
 
 export const canonicalEventSchema = z.object({

@@ -15,6 +15,7 @@ export const alias: Record<string, string> = {
   '@devanalytics/investigations': pkg('investigations'),
   '@devanalytics/github': pkg('github'),
   '@devanalytics/gitlab': pkg('gitlab'),
+  '@devanalytics/circleci': pkg('circleci'),
   '@devanalytics/ai': pkg('ai'),
   '@devanalytics/sdk': pkg('sdk'),
   '@devanalytics/mcp': pkg('mcp'),

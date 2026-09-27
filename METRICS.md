@@ -297,6 +297,7 @@ How long CI takes once a runner picks the job up.
 **Caveats**
 
 - Excludes queue time, which is reported separately as CI queue time. A slow pipeline and a starved runner pool look identical if the two are added together.
+- Covers every provider, including those that cannot report queue time, because all of them report when a run started and stopped.
 
 **Verified against the metric test dataset**
 
@@ -322,6 +323,7 @@ How long CI runs wait for a runner before starting.
 **Caveats**
 
 - Rising queue time with flat build duration points at runner capacity, not at the pipeline.
+- Measured from the moment a provider says a run was enqueued. Providers that do not report one — CircleCI does not — are excluded rather than recorded as having waited no time, so this metric can cover fewer runs than build duration does.
 
 **Verified against the metric test dataset**
 
