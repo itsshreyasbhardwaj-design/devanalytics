@@ -13,7 +13,7 @@
     "@devanalytics/metrics": "workspace:*",
     "@devanalytics/anomaly-detection": "workspace:*",
     "@devanalytics/runtime": "workspace:*",
-    "@electric-sql/pglite": "^0.2.15",
-    "pg": "^8.13.1"
+    "@electric-sql/pglite": "^0.5.13",
+    "pg": "^8.23.1"
   }
 }
