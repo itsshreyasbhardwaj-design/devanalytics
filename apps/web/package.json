@@ -19,7 +19,7 @@
     "@devanalytics/ai": "workspace:*",
     "@devanalytics/ui": "workspace:*",
     "@devanalytics/demo-data": "workspace:*",
-    "next": "^15.1.3",
+    "next": "^15.5.28",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.0",
