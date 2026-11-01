@@ -12,6 +12,6 @@
     "@devanalytics/core": "workspace:*",
     "@devanalytics/sdk": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "zod": "^3.24.1"
+    "zod": "^4.6.6"
   }
 }
